@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace JobPortal.Domain.Entities
 {
-    public class Application
+    public class JobApplication
     {
         public int Id { get; set; }
         public int JobId { get; set; }

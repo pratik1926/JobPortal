@@ -13,7 +13,7 @@ namespace JobPortal.Domain.Entities
         public string Email { get; set; } = string.Empty;
         public string PasswordHash { get; set; } = string.Empty;
         public string Role { get; set; } = "Seeker";
-        public ICollection<Job> JobPosted { get; set; } = new List<Job>();
-        public ICollection<Application> Applications { get; set; } = new List<Application>();
+        public ICollection<Job> Jobs { get; set; } = new List<Job>();
+        public ICollection<JobApplication> Applications { get; set; } = new List<JobApplication>();
     }
 }
