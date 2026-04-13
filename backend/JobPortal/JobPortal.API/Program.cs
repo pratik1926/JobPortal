@@ -1,4 +1,5 @@
-
+using JobPortal.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
 namespace JobPortal.API
 {
     public class Program
@@ -14,6 +15,8 @@ namespace JobPortal.API
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
+            builder.Services.AddDbContext<JobPortalDbContext>(options =>
+            options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
