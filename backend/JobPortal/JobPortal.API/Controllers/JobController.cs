@@ -13,11 +13,16 @@ namespace JobPortal.API.Controllers
     {
         private readonly IJobService _jobService;
         private readonly IApplicationService _applicationService;
+        private readonly IFileService _fileService;
 
-        public JobController(IJobService jobService, IApplicationService applicationService)
+        public JobController(
+            IJobService jobService,
+            IApplicationService applicationService,
+            IFileService fileService)
         {
             _jobService = jobService;
             _applicationService = applicationService;
+            _fileService = fileService;
         }
 
         // 🔥 USER ID EXTRACTOR
@@ -60,7 +65,7 @@ namespace JobPortal.API.Controllers
             return Ok(new { message = "Job Created Successfully" });
         }
 
-        // 🔥 APPLY TO JOB (FIXED)
+        // 🔥 APPLY TO JOB (FINAL CLEAN VERSION)
         [HttpPost("apply/{jobId}")]
         [Authorize(Roles = "Seeker")]
         public async Task<IActionResult> ApplyToJob(int jobId, [FromForm] ApplyJobRequest request)
@@ -79,29 +84,23 @@ namespace JobPortal.API.Controllers
                 if (resume == null || resume.Length == 0)
                     return BadRequest("Resume is required");
 
-                var allowedExtensions = new[] { ".pdf" };
                 var extension = Path.GetExtension(resume.FileName).ToLower();
 
-                if (!allowedExtensions.Contains(extension))
+                if (extension != ".pdf")
                     return BadRequest("Only PDF files are allowed");
 
-                // ✅ SAVE FILE
-                var fileName = Guid.NewGuid() + extension;
-                var folderPath = Path.Combine("wwwroot", "resumes");
-
-                if (!Directory.Exists(folderPath))
-                    Directory.CreateDirectory(folderPath);
-
-                var filePath = Path.Combine(folderPath, fileName);
-
-                using (var stream = new FileStream(filePath, FileMode.Create))
+                // 🔥 CONVERT FILE → BYTE ARRAY
+                byte[] fileBytes;
+                using (var ms = new MemoryStream())
                 {
-                    await resume.CopyToAsync(stream);
+                    await resume.CopyToAsync(ms);
+                    fileBytes = ms.ToArray();
                 }
 
-                var resumeUrl = $"/resumes/{fileName}";
+                // 🔥 SAVE USING FILE SERVICE
+                var resumeUrl = await _fileService.SaveResumeAsync(fileBytes, resume.FileName);
 
-                // ✅ CLEAN DTO
+                // 🔥 CLEAN DTO (Application Layer)
                 var dto = new ApplyJobDto
                 {
                     ResumeUrl = resumeUrl,
@@ -118,7 +117,7 @@ namespace JobPortal.API.Controllers
             }
         }
 
-        // 🔹 GET MY APPLICATIONS (SEEKER)
+        // 🔹 GET MY APPLICATIONS
         [HttpGet("my-applications")]
         [Authorize(Roles = "Seeker")]
         public async Task<IActionResult> GetMyApplications()

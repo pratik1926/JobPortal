@@ -87,7 +87,8 @@ namespace JobPortal.API
             builder.Services.AddScoped<IJobRepository, JobRepository>();
 
             builder.Services.AddScoped<IApplicationService, ApplicationService>();
-            
+
+            builder.Services.AddScoped<IFileService, FileService>();
 
             var app = builder.Build();
 
