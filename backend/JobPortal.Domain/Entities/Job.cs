@@ -21,7 +21,7 @@ namespace JobPortal.Domain.Entities
         //Navigation Property
         public User Provider { get; set; }
 
-        public List<JobApplication> Application { get; set; } = new();
+        public List<Application> Application { get; set; } = new();
 
     }
 }

@@ -3,30 +3,84 @@ using JobPortal.Domain.Entities;
 using JobPortal.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
-namespace JobPortal.Infrastructure.Repositories;
-
-public class JobRepository : IJobRepository
+namespace JobPortal.Infrastructure.Repositories
 {
-    private readonly JobPortalDbContext _context;
-
-    public JobRepository(JobPortalDbContext context)
+    public class JobRepository : IJobRepository
     {
-        _context = context;
-    }
+        private readonly JobPortalDbContext _context;
 
-    public async Task<List<Job>> GetAllJobsAsync()
-    {
-        return await _context.Jobs.ToListAsync();
-    }
+        public JobRepository(JobPortalDbContext context)
+        {
+            _context = context;
+        }
 
-    public async Task<Job?> GetJobByIdAsync(int id)
-    {
-        return await _context.Jobs.FindAsync(id);
-    }
+        // ✅ GET ALL JOBS
+        public async Task<IEnumerable<Job>> GetAllJobsAsync()
+        {
+            return await _context.Jobs.ToListAsync();
+        }
 
-    public async Task AddJobAsync(Job job)
-    {
-        await _context.Jobs.AddAsync(job);
-        await _context.SaveChangesAsync();
+        // ✅ GET JOB BY ID
+        public async Task<Job?> GetJobByIdAsync(int id)
+        {
+            return await _context.Jobs.FindAsync(id);
+        }
+
+        // ✅ CREATE JOB
+        public async Task<Job> CreateJobAsync(Job job)
+        {
+            await _context.Jobs.AddAsync(job);
+            await _context.SaveChangesAsync();
+            return job;
+        }
+
+        // ✅ DELETE JOB
+        public async Task<bool> DeleteJobAsync(int id)
+        {
+            var job = await _context.Jobs.FindAsync(id);
+            if (job == null) return false;
+
+            _context.Jobs.Remove(job);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        // ✅ GET APPLICATIONS BY PROVIDER (for provider dashboard)
+        public async Task<IEnumerable<JobPortal.Domain.Entities.Application>> GetApplicationsByProviderIdAsync(int providerId)
+        {
+            return await _context.Applications
+                .Include(a => a.Job)
+                .Include(a => a.Seeker)
+                .Where(a => a.Job.ProviderId == providerId)
+                .ToListAsync();
+        }
+
+        // 🔥 NEW: GET APPLICATIONS BY SEEKER (CRITICAL FIX)
+        public async Task<IEnumerable<JobPortal.Domain.Entities.Application>> GetApplicationsBySeekerIdAsync(int seekerId)
+        {
+            return await _context.Applications
+                .Include(a => a.Job)
+                .Where(a => a.SeekerId == seekerId)
+                .ToListAsync();
+        }
+
+        // ✅ APPLY TO JOB
+        public async Task<JobPortal.Domain.Entities.Application> ApplyToJobAsync(JobPortal.Domain.Entities.Application application)
+        {
+            await _context.Applications.AddAsync(application);
+            await _context.SaveChangesAsync();
+            return application;
+        }
+
+        // ✅ UPDATE APPLICATION STATUS
+        public async Task<bool> UpdateApplicationStatusAsync(int applicationId, string status)
+        {
+            var app = await _context.Applications.FindAsync(applicationId);
+            if (app == null) return false;
+
+            app.Status = status;
+            await _context.SaveChangesAsync();
+            return true;
+        }
     }
 }

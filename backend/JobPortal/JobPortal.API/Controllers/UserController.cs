@@ -2,10 +2,6 @@
 using JobPortal.Application.DTOs;
 using JobPortal.Application.Interfaces;
 using JobPortal.Domain.Entities;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
 
 namespace JobPortal.API.Controllers;
 
@@ -14,64 +10,55 @@ namespace JobPortal.API.Controllers;
 public class UserController : ControllerBase
 {
     private readonly IUserRepository _userRepository;
-    private readonly IConfiguration _configuration; // ✅ ADD THIS
+    private readonly IJwtTokenGenerator _jwtTokenGenerator;
 
     // ✅ UPDATED CONSTRUCTOR
-    public UserController(IUserRepository userRepository, IConfiguration configuration)
+    public UserController(IUserRepository userRepository, IJwtTokenGenerator jwtTokenGenerator)
     {
         _userRepository = userRepository;
-        _configuration = configuration;
+        _jwtTokenGenerator = jwtTokenGenerator;
     }
 
     // ✅ REGISTER API
     [HttpPost("register")]
     public async Task<IActionResult> Register(RegisterUserDto dto)
     {
+        if (string.IsNullOrEmpty(dto.Email) || string.IsNullOrEmpty(dto.Password))
+                return BadRequest(new { message = "Email and Passwords are required" });
+
+        var existingUser = await _userRepository.GetUserByEmailAsync(dto.Email);
+        if (existingUser != null) {
+            return BadRequest(new { message = "User already exist" });
+                }
+
+
         var user = new User
         {
             Name = dto.Name,
             Email = dto.Email,
-            PasswordHash = dto.Password, // ⚠️ later we hash
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
             Role = dto.Role
         };
 
         var result = await _userRepository.RegisterUserAsync(user);
 
-        return Ok(new { message = "User registered", userId = result.Id });
+        return StatusCode(201, new {message = "User Registered Successfully", UserId = result.Id});
     }
 
     // ✅ LOGIN API (JWT)
     [HttpPost("login")]
     public async Task<IActionResult> Login(LoginDto dto)
     {
+        if (string.IsNullOrEmpty(dto.Email) || string.IsNullOrEmpty(dto.Password))
+            return BadRequest(new { message = "Email and Password are required" });
+
         var user = await _userRepository.GetUserByEmailAsync(dto.Email);
 
-        if (user == null || user.PasswordHash != dto.Password)
+        if (user == null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
             return Unauthorized("Invalid credentials");
 
-        var claims = new[]
-        {
-            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new Claim(ClaimTypes.Email, user.Email),
-            new Claim(ClaimTypes.Role, user.Role)
-        };
+        var token = _jwtTokenGenerator.GenerateToken(user);
 
-        var key = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!)
-        );
-
-        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-        var token = new JwtSecurityToken(
-            issuer: _configuration["Jwt:Issuer"],
-            audience: _configuration["Jwt:Audience"],
-            claims: claims,
-            expires: DateTime.Now.AddHours(2),
-            signingCredentials: creds
-        );
-
-        var jwt = new JwtSecurityTokenHandler().WriteToken(token);
-
-        return Ok(new { token = jwt });
+        return Ok(new { token });
     }
 }
