@@ -12,12 +12,12 @@ public class JobPortalDbContext : DbContext
 
     public DbSet<User> Users { get; set; }
     public DbSet<Job> Jobs { get; set; }
-    public DbSet<JobApplication> Applications { get; set; }
+    public DbSet<Domain.Entities.Application> Applications { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         // 🔥 FIX: Prevent multiple cascade delete paths
-        modelBuilder.Entity<JobApplication>()
+        modelBuilder.Entity<Domain.Entities.Application>()
             .HasOne(a => a.Seeker)
             .WithMany(u => u.Applications)
             .HasForeignKey(a => a.SeekerId)

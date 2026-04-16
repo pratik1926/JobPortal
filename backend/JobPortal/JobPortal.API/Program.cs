@@ -7,6 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.OpenApi.Models;
 using JobPortal.Application.Services;
+using JobPortal.Infrastructure.Services;
 
 namespace JobPortal.API
 {
@@ -83,9 +84,10 @@ namespace JobPortal.API
             builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
 
             builder.Services.AddScoped<IJobService, JobService>();
+            builder.Services.AddScoped<IJobRepository, JobRepository>();
 
             builder.Services.AddScoped<IApplicationService, ApplicationService>();
-            builder.Services.AddScoped<IApplicationRepository, ApplicationRepository>();
+            
 
             var app = builder.Build();
 
