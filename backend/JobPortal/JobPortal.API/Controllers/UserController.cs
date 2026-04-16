@@ -1,7 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using JobPortal.Application.DTOs;
+﻿using JobPortal.Application.DTOs;
 using JobPortal.Application.Interfaces;
 using JobPortal.Domain.Entities;
+using Microsoft.AspNetCore.Mvc;
 
 namespace JobPortal.API.Controllers;
 
@@ -24,12 +24,13 @@ public class UserController : ControllerBase
     public async Task<IActionResult> Register(RegisterUserDto dto)
     {
         if (string.IsNullOrEmpty(dto.Email) || string.IsNullOrEmpty(dto.Password))
-                return BadRequest(new { message = "Email and Passwords are required" });
+            return BadRequest(new { message = "Email and Passwords are required" });
 
         var existingUser = await _userRepository.GetUserByEmailAsync(dto.Email);
-        if (existingUser != null) {
+        if (existingUser != null)
+        {
             return BadRequest(new { message = "User already exist" });
-                }
+        }
 
 
         var user = new User
@@ -42,7 +43,7 @@ public class UserController : ControllerBase
 
         var result = await _userRepository.RegisterUserAsync(user);
 
-        return StatusCode(201, new {message = "User Registered Successfully", UserId = result.Id});
+        return StatusCode(201, new { message = "User Registered Successfully", UserId = result.Id });
     }
 
     // ✅ LOGIN API (JWT)

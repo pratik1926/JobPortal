@@ -21,4 +21,8 @@
     <ProjectReference Include="..\..\JobPortal.Infrastructure\JobPortal.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\resumes\" />
+  </ItemGroup>
+
 </Project>

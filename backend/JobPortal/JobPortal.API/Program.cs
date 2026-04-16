@@ -104,6 +104,7 @@ namespace JobPortal.API
 
             app.UseAuthorization();
 
+            app.UseStaticFiles();   
 
             app.MapControllers();
 

@@ -17,6 +17,10 @@ namespace JobPortal.Domain.Entities
         //Navigation
         public Job Job { get; set; }
         public User Seeker { get; set; }
+
+        public string ResumeUrl {  get; set; } = string.Empty;
+        public string CoverLetter {  get; set; }
+
     }
 
 }
