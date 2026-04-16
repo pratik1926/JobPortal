@@ -1,6 +1,8 @@
 ﻿using JobPortal.Application.Interfaces;
+using JobPortal.Application.DTOs;
 using JobPortal.Domain.Entities;
 using ApplicationEntity = JobPortal.Domain.Entities.Application;
+
 namespace JobPortal.Application.Services
 {
     public class ApplicationService : IApplicationService
@@ -12,12 +14,17 @@ namespace JobPortal.Application.Services
             _jobRepository = jobRepository;
         }
 
-        public async Task ApplyToJobAsync(int jobId, int seekerId)
+        // 🔥 UPDATED METHOD (NOW ACCEPTS DTO)
+        public async Task ApplyToJobAsync(int jobId, int seekerId, ApplyJobDto dto)
         {
             var application = new ApplicationEntity
             {
                 JobId = jobId,
-                SeekerId = seekerId
+                SeekerId = seekerId,
+                ResumeUrl = dto.ResumeUrl,
+                CoverLetter = dto.CoverLetter,
+                Status = "Applied",
+                AppliedAt = DateTime.UtcNow
             };
 
             await _jobRepository.ApplyToJobAsync(application);

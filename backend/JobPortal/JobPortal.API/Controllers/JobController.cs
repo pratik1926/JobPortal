@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using JobPortal.Application.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
+using JobPortal.API.DTOs;
 
 namespace JobPortal.API.Controllers
 {
@@ -19,12 +20,11 @@ namespace JobPortal.API.Controllers
             _applicationService = applicationService;
         }
 
-        // 🔥 ROBUST USER ID EXTRACTOR (FINAL FIX)
+        // 🔥 USER ID EXTRACTOR
         private int? GetUserId()
         {
             var userIdClaim = User.Claims.FirstOrDefault(c =>
                 c.Type == ClaimTypes.NameIdentifier ||
-                c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier" ||
                 c.Type.Contains("nameidentifier")
             );
 
@@ -45,7 +45,7 @@ namespace JobPortal.API.Controllers
             return Ok(jobs);
         }
 
-        // 🔹 CREATE JOB (PROVIDER)
+        // 🔹 CREATE JOB
         [HttpPost]
         [Authorize(Roles = "Provider")]
         public async Task<IActionResult> CreateJob(CreateJobDto dto)
@@ -60,10 +60,10 @@ namespace JobPortal.API.Controllers
             return Ok(new { message = "Job Created Successfully" });
         }
 
-        // 🔹 APPLY TO JOB (SEEKER)
+        // 🔥 APPLY TO JOB (FIXED)
         [HttpPost("apply/{jobId}")]
         [Authorize(Roles = "Seeker")]
-        public async Task<IActionResult> ApplyToJob(int jobId)
+        public async Task<IActionResult> ApplyToJob(int jobId, [FromForm] ApplyJobRequest request)
         {
             try
             {
@@ -72,7 +72,43 @@ namespace JobPortal.API.Controllers
                 if (userId == null)
                     return Unauthorized("Invalid user token");
 
-                await _applicationService.ApplyToJobAsync(jobId, userId.Value);
+                var resume = request.Resume;
+                var coverLetter = request.CoverLetter;
+
+                // ✅ VALIDATION
+                if (resume == null || resume.Length == 0)
+                    return BadRequest("Resume is required");
+
+                var allowedExtensions = new[] { ".pdf" };
+                var extension = Path.GetExtension(resume.FileName).ToLower();
+
+                if (!allowedExtensions.Contains(extension))
+                    return BadRequest("Only PDF files are allowed");
+
+                // ✅ SAVE FILE
+                var fileName = Guid.NewGuid() + extension;
+                var folderPath = Path.Combine("wwwroot", "resumes");
+
+                if (!Directory.Exists(folderPath))
+                    Directory.CreateDirectory(folderPath);
+
+                var filePath = Path.Combine(folderPath, fileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await resume.CopyToAsync(stream);
+                }
+
+                var resumeUrl = $"/resumes/{fileName}";
+
+                // ✅ CLEAN DTO
+                var dto = new ApplyJobDto
+                {
+                    ResumeUrl = resumeUrl,
+                    CoverLetter = coverLetter
+                };
+
+                await _applicationService.ApplyToJobAsync(jobId, userId.Value, dto);
 
                 return Ok(new { message = "Applied successfully" });
             }
@@ -87,32 +123,25 @@ namespace JobPortal.API.Controllers
         [Authorize(Roles = "Seeker")]
         public async Task<IActionResult> GetMyApplications()
         {
-            try
+            var userId = GetUserId();
+
+            if (userId == null)
+                return Unauthorized();
+
+            var applications = await _applicationService.GetMyApplicationsAsync(userId.Value);
+
+            var result = applications.Select(a => new ApplicationProviderDto
             {
-                var userId = GetUserId();
-                Console.WriteLine($"User Id from token: {GetUserId()}");
+                Id = a.Id,
+                SeekerEmail = a.Seeker?.Email ?? "",
+                JobTitle = a.Job?.Title ?? "",
+                Status = a.Status,
+                AppliedAt = a.AppliedAt,
+                ResumeUrl = a.ResumeUrl,
+                CoverLetter = a.CoverLetter
+            });
 
-                if (userId == null)
-                    return Unauthorized("Invalid user token");
-
-                var applications = await _applicationService.GetMyApplicationsAsync(userId.Value);
-
-                var result = applications.Select(a => new ApplicationResponseDto
-                {
-                    Id = a.Id,
-                    Status = a.Status,
-                    AppliedAt = a.AppliedAt,
-                    JobTitle = a.Job?.Title ?? "",
-                    Budget = a.Job?.Budget ?? 0,
-                    Location = a.Job?.Location ?? ""
-                });
-
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
+            return Ok(result);
         }
 
         // 🔹 GET APPLICATIONS FOR PROVIDER
@@ -120,34 +149,28 @@ namespace JobPortal.API.Controllers
         [Authorize(Roles = "Provider")]
         public async Task<IActionResult> GetApplicationsForMyJobs()
         {
-            try
+            var userId = GetUserId();
+
+            if (userId == null)
+                return Unauthorized();
+
+            var applications = await _applicationService.GetApplicationsForProviderAsync(userId.Value);
+
+            var result = applications.Select(a => new ApplicationProviderDto
             {
-                var userId = GetUserId();
+                Id = a.Id,
+                SeekerEmail = a.Seeker?.Email ?? "",
+                JobTitle = a.Job?.Title ?? "",
+                Status = a.Status,
+                AppliedAt = a.AppliedAt,
+                ResumeUrl = a.ResumeUrl,
+                CoverLetter = a.CoverLetter
+            });
 
-                if (userId == null)
-                    return Unauthorized("Invalid user token");
-
-                var applications = await _applicationService
-                    .GetApplicationsForProviderAsync(userId.Value);
-
-                var result = applications.Select(a => new ApplicationProviderDto
-                {
-                    Id = a.Id,
-                    SeekerEmail = a.Seeker?.Email ?? "",
-                    JobTitle = a.Job?.Title ?? "",
-                    Status = a.Status,
-                    AppliedAt = a.AppliedAt
-                });
-
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
+            return Ok(result);
         }
 
-        // 🔥 UPDATE APPLICATION STATUS
+        // 🔥 UPDATE STATUS
         [HttpPut("applications/{applicationId}/status")]
         [Authorize(Roles = "Provider")]
         public async Task<IActionResult> UpdateApplicationStatus(int applicationId, [FromBody] string status)
@@ -155,26 +178,11 @@ namespace JobPortal.API.Controllers
             var userId = GetUserId();
 
             if (userId == null)
-                return Unauthorized("Invalid user token");
+                return Unauthorized();
 
-            try
-            {
-                await _applicationService.UpdateApplicationStatusAsync(
-                    applicationId,
-                    status,
-                    userId.Value
-                );
+            await _applicationService.UpdateApplicationStatusAsync(applicationId, status, userId.Value);
 
-                return Ok(new { message = "Application status updated successfully" });
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                return Forbid(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
+            return Ok(new { message = "Application status updated successfully" });
         }
     }
 }
