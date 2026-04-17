@@ -4,6 +4,7 @@ using JobPortal.Application.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using JobPortal.API.DTOs;
+using Microsoft.EntityFrameworkCore;
 
 namespace JobPortal.API.Controllers
 {
@@ -76,6 +77,13 @@ namespace JobPortal.API.Controllers
 
                 if (userId == null)
                     return Unauthorized("Invalid user token");
+                // 🔥 PREVENT DUPLICATE APPLY
+                var alreadyApplied = await _applicationService.HasUserApplied(jobId, userId.Value);
+
+                if (alreadyApplied)
+                {
+                    return BadRequest("You already applied to this job");
+                }
 
                 var resume = request.Resume;
                 var coverLetter = request.CoverLetter;
@@ -117,6 +125,21 @@ namespace JobPortal.API.Controllers
             }
         }
 
+        [HttpGet("my-jobs")]
+        [Authorize(Roles = "Provider")]
+        public async Task<IActionResult> GetMyJobs()
+        {
+            var userId = GetUserId();
+
+            if (userId == null)
+                return Unauthorized("User ID not found");
+
+            var jobs = await _jobService.GetJobsByProviderId(userId.Value);
+
+            return Ok(jobs);
+        }
+
+
         // 🔹 GET MY APPLICATIONS
         [HttpGet("my-applications")]
         [Authorize(Roles = "Seeker")]
@@ -129,18 +152,10 @@ namespace JobPortal.API.Controllers
 
             var applications = await _applicationService.GetMyApplicationsAsync(userId.Value);
 
-            var result = applications.Select(a => new ApplicationProviderDto
-            {
-                Id = a.Id,
-                SeekerEmail = a.Seeker?.Email ?? "",
-                JobTitle = a.Job?.Title ?? "",
-                Status = a.Status,
-                AppliedAt = a.AppliedAt,
-                ResumeUrl = a.ResumeUrl,
-                CoverLetter = a.CoverLetter
-            });
+            // ✅ ONLY RETURN JOB IDs
+            var jobIds = applications.Select(a => a.JobId).Distinct().ToList();
 
-            return Ok(result);
+            return Ok(jobIds);
         }
 
         // 🔹 GET APPLICATIONS FOR PROVIDER

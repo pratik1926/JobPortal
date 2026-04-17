@@ -82,5 +82,18 @@ namespace JobPortal.Infrastructure.Repositories
             await _context.SaveChangesAsync();
             return true;
         }
+
+        public async Task<List<Job>> GetJobsByProviderId(int providerId)
+        {
+            return await _context.Jobs
+                .Where(j => j.ProviderId == providerId)
+                .ToListAsync();
+        }
+
+        public async Task<bool> HasUserApplied(int jobId, int userId)
+        {
+            return await _context.Applications
+                .AnyAsync(a => a.JobId == jobId && a.SeekerId == userId);
+        }
     }
 }

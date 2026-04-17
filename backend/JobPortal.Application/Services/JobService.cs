@@ -31,5 +31,10 @@ namespace JobPortal.Application.Services
 
             await _jobRepository.CreateJobAsync(job);
         }
+
+        public async Task<List<Job>> GetJobsByProviderId(int providerId)
+        {
+            return await _jobRepository.GetJobsByProviderId(providerId);
+        }
     }
 }

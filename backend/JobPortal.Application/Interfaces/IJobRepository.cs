@@ -20,5 +20,9 @@ namespace JobPortal.Application.Interfaces
 
         Task<JobPortal.Domain.Entities.Application> ApplyToJobAsync(JobPortal.Domain.Entities.Application application);
         Task<bool> UpdateApplicationStatusAsync(int applicationId, string status);
+        Task<List<Job>> GetJobsByProviderId(int providerId);
+
+        Task<bool> HasUserApplied(int jobId, int userId);
+
     }
 }
