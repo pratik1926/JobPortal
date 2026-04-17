@@ -9,5 +9,7 @@
         Task<IEnumerable<JobPortal.Domain.Entities.Application>> GetApplicationsForProviderAsync(int providerId);
 
         Task UpdateApplicationStatusAsync(int applicationId, string status, int providerId);
+
+        Task<bool> HasUserApplied(int jobId, int userId);
     }
 }

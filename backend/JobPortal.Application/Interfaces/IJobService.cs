@@ -7,5 +7,7 @@ namespace JobPortal.Application.Interfaces
     {
         Task<IEnumerable<Job>> GetAllJobsAsync();
         Task CreateJobAsync(CreateJobDto dto, int providerId);
+        Task<List<Job>> GetJobsByProviderId(int providerId);
+
     }
 }

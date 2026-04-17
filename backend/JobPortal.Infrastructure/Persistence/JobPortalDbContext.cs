@@ -5,6 +5,7 @@ namespace JobPortal.Infrastructure.Persistence;
 
 public class JobPortalDbContext : DbContext
 {
+    
     public JobPortalDbContext(DbContextOptions<JobPortalDbContext> options)
         : base(options)
     {
