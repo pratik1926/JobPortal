@@ -81,6 +81,17 @@ namespace JobPortal.API
                 };
             });
 
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowFrontend",
+                    policy =>
+                    {
+                        policy.WithOrigins("http://localhost:5174")
+                              .AllowAnyHeader()
+                              .AllowAnyMethod();
+                    });
+            });
+
             builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
 
             builder.Services.AddScoped<IJobService, JobService>();
@@ -89,6 +100,8 @@ namespace JobPortal.API
             builder.Services.AddScoped<IApplicationService, ApplicationService>();
 
             builder.Services.AddScoped<IFileService, FileService>();
+
+            
 
             var app = builder.Build();
 
@@ -100,6 +113,7 @@ namespace JobPortal.API
             }
 
             app.UseHttpsRedirection();
+            app.UseCors("AllowFrontend");
 
             app.UseAuthentication();
 
