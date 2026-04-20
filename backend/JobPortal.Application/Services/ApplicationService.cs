@@ -101,9 +101,19 @@ namespace JobPortal.Application.Services
         }
 
         // 🔹 GET MY APPLICATIONS
-        public async Task<IEnumerable<ApplicationEntity>> GetMyApplicationsAsync(int seekerId)
+        public async Task<IEnumerable<MyApplicationDto>> GetMyApplicationsAsync(int seekerId)
         {
-            return await _jobRepository.GetApplicationsBySeekerIdAsync(seekerId);
+            var apps = await _jobRepository.GetApplicationsBySeekerIdAsync(seekerId);
+
+            return apps.Select(a => new MyApplicationDto
+            {
+                Id = a.Id,
+                JobTitle = a.Job.Title,
+                Location = a.Job.Location,
+                Status = a.Status,
+                AppliedAt = a.AppliedAt,
+                ResumeUrl = a.ResumeUrl
+            });
         }
 
         // 🔹 GET PROVIDER APPLICATIONS
@@ -112,18 +122,48 @@ namespace JobPortal.Application.Services
             return await _jobRepository.GetApplicationsByProviderIdAsync(providerId);
         }
 
-        // 🔹 UPDATE STATUS
-        public async Task UpdateApplicationStatusAsync(int applicationId, string status, int providerId)
+        // 🔥 STATE MACHINE (NEW)
+        private bool IsValidTransition(string currentStatus, string newStatus)
         {
-            var apps = await _jobRepository.GetApplicationsByProviderIdAsync(providerId);
+            return currentStatus switch
+            {
+                "Applied" => newStatus == "Approved" || newStatus == "Rejected",
+                "Approved" => false,
+                "Rejected" => false,
+                _ => false
+            };
+        }
 
-            var app = apps.FirstOrDefault(a => a.Id == applicationId);
+        //// 🔹 UPDATE STATUS
+        //public async Task UpdateApplicationStatusAsync(int applicationId, string status, int providerId)
+        //{
+        //    var apps = await _jobRepository.GetApplicationsByProviderIdAsync(providerId);
 
-            if (app == null)
+        //    var app = apps.FirstOrDefault(a => a.Id == applicationId);
+
+        //    if (app == null)
+        //        throw new UnauthorizedAccessException("You are not allowed to update this application");
+
+        //    await _jobRepository.UpdateApplicationStatusAsync(applicationId, status);
+        //}
+
+        // 🔥 UPDATE STATUS (UPDATED WITH RULES)
+        public async Task UpdateApplicationStatusAsync(int applicationId, string newStatus, int providerId)
+        {
+            var app = await _jobRepository.GetApplicationByIdAsync(applicationId);
+
+            if (app == null || app.Job.ProviderId != providerId)
                 throw new UnauthorizedAccessException("You are not allowed to update this application");
 
-            await _jobRepository.UpdateApplicationStatusAsync(applicationId, status);
+            // 🔥 STATE MACHINE CHECK
+            if (!IsValidTransition(app.Status, newStatus))
+            {
+                throw new InvalidOperationException($"Invalid status transition: {app.Status} → {newStatus}");
+            }
+
+            await _jobRepository.UpdateApplicationStatusAsync(applicationId, newStatus);
         }
+
 
         // 🔥 PREVENT DUPLICATE APPLY (CLEAN WAY)
         public async Task<bool> HasUserApplied(int jobId, int userId)

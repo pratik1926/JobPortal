@@ -1,4 +1,5 @@
 ﻿using JobPortal.Domain.Entities;
+using ApplicationEntity = JobPortal.Domain.Entities.Application;
 
 namespace JobPortal.Application.Interfaces
 {
@@ -23,6 +24,8 @@ namespace JobPortal.Application.Interfaces
         Task<List<Job>> GetJobsByProviderId(int providerId);
 
         Task<bool> HasUserApplied(int jobId, int userId);
+
+        Task<ApplicationEntity> GetApplicationByIdAsync(int applicationId);
 
     }
 }
