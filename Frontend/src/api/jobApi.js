@@ -1,5 +1,10 @@
 import api from "./axios"; // ✅ use only this
 
+// ✅ CREATE job
+export const createJob = (data) => {
+  return api.post("/Job", data);
+};
+
 // ✅ GET provider jobs
 export const getMyJobs = () => {
   return api.get("/Job/my-jobs");
@@ -22,4 +27,16 @@ export const applyToJob = (jobId, formData) => {
 // ✅ GET applied jobs (FIXED)
 export const getMyApplications = () => {
   return api.get("/Job/my-applications"); // 🔥 FIXED
+};
+
+
+export const getApplicationsForProvider = () => {
+  return api.get("/Job/applications");
+};
+
+
+export const updateApplicationStatus = (applicationId, status) => {
+  return api.put(`/Job/applications/${applicationId}/status`,{ 
+    status: status,
+  });
 };

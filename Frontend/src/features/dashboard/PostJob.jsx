@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { createJob } from "../jobs/jobApi";
+import { createJob } from "../../api/jobApi";
 
 export default function PostJob({ onJobCreated }) {
   const [form, setForm] = useState({
