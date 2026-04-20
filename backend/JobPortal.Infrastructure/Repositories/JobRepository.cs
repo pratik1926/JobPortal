@@ -2,6 +2,7 @@
 using JobPortal.Domain.Entities;
 using JobPortal.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
+using ApplicationEntity = JobPortal.Domain.Entities.Application;
 
 namespace JobPortal.Infrastructure.Repositories
 {
@@ -94,6 +95,13 @@ namespace JobPortal.Infrastructure.Repositories
         {
             return await _context.Applications
                 .AnyAsync(a => a.JobId == jobId && a.SeekerId == userId);
+        }
+
+        public async Task<ApplicationEntity> GetApplicationByIdAsync(int applicationId)
+        {
+            return await _context.Applications
+                .Include(a => a.Job) // 🔥 VERY IMPORTANT
+                .FirstOrDefaultAsync(a => a.Id == applicationId);
         }
     }
 }

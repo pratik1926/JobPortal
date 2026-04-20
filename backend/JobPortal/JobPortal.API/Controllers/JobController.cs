@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using JobPortal.API.DTOs;
 using Microsoft.EntityFrameworkCore;
-
+using JobPortal.Application.DTOs;
 namespace JobPortal.API.Controllers
 {
     [ApiController]
@@ -152,10 +152,7 @@ namespace JobPortal.API.Controllers
 
             var applications = await _applicationService.GetMyApplicationsAsync(userId.Value);
 
-            // ✅ ONLY RETURN JOB IDs
-            var jobIds = applications.Select(a => a.JobId).Distinct().ToList();
-
-            return Ok(jobIds);
+            return Ok(applications);
         }
 
         // 🔹 GET APPLICATIONS FOR PROVIDER
@@ -184,17 +181,37 @@ namespace JobPortal.API.Controllers
             return Ok(result);
         }
 
-        // 🔥 UPDATE STATUS
+        //// 🔥 UPDATE STATUS
+        //[HttpPut("applications/{applicationId}/status")]
+        //[Authorize(Roles = "Provider")]
+        //public async Task<IActionResult> UpdateApplicationStatus(int applicationId, [FromBody] string status)
+        //{
+        //    var userId = GetUserId();
+
+        //    if (userId == null)
+        //        return Unauthorized();
+
+        //    await _applicationService.UpdateApplicationStatusAsync(applicationId, status, userId.Value);
+
+        //    return Ok(new { message = "Application status updated successfully" });
+        //}
+
         [HttpPut("applications/{applicationId}/status")]
         [Authorize(Roles = "Provider")]
-        public async Task<IActionResult> UpdateApplicationStatus(int applicationId, [FromBody] string status)
+        public async Task<IActionResult> UpdateApplicationStatus(
+    int applicationId,
+    [FromBody] UpdateStatusDto dto)
         {
             var userId = GetUserId();
 
             if (userId == null)
                 return Unauthorized();
 
-            await _applicationService.UpdateApplicationStatusAsync(applicationId, status, userId.Value);
+            await _applicationService.UpdateApplicationStatusAsync(
+                applicationId,
+                dto.Status,
+                userId.Value
+            );
 
             return Ok(new { message = "Application status updated successfully" });
         }
