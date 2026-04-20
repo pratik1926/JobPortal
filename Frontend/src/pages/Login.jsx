@@ -5,8 +5,6 @@ import { AuthContext } from "../context/AuthContext";
 
 export default function Login() {
   const navigate = useNavigate();
-
-  // ✅ get login + token from context
   const { login, token } = useContext(AuthContext);
 
   const [form, setForm] = useState({
@@ -14,10 +12,26 @@ export default function Login() {
     password: "",
   });
 
-  // 🔥 Prevent logged-in users from accessing login page
+  // 🔥 Decode role from token
+  const getRoleFromToken = (token) => {
+    try {
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      return payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+    } catch {
+      return null;
+    }
+  };
+
+  // 🔥 Redirect if already logged in
   useEffect(() => {
     if (token) {
-      navigate("/dashboard", { replace: true });
+      const role = getRoleFromToken(token);
+
+      if (role === "Provider") {
+        navigate("/dashboard", { replace: true });
+      } else if (role === "Seeker") {
+        navigate("/seeker-dashboard", { replace: true });
+      }
     }
   }, [token, navigate]);
 
@@ -27,15 +41,26 @@ export default function Login() {
     try {
       const res = await loginUser(form);
 
+      const token = res.data.token;
+
       console.log("Login response:", res.data);
 
-      // ✅ store token via context
-      login(res.data.token);
+      // ✅ Save token
+      login(token);
+
+      // 🔥 Get role
+      const role = getRoleFromToken(token);
 
       alert("Login successful");
 
-      // ✅ replace history (fix back button issue)
-      navigate("/dashboard", { replace: true });
+      // 🔥 ROLE-BASED REDIRECT
+      if (role === "Provider") {
+        navigate("/dashboard", { replace: true });
+      } else if (role === "Seeker") {
+        navigate("/seeker-dashboard", { replace: true });
+      } else {
+        navigate("/", { replace: true });
+      }
 
     } catch (err) {
       console.error(err);

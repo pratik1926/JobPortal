@@ -1,23 +1,173 @@
+// import { useEffect, useState } from "react";
+// import { getAllJobs, applyToJob, getMyApplications } from "../../api/jobApi";
+
+// export default function SeekerJobs() {
+
+//   const [jobs, setJobs] = useState([]);
+
+//   // ✅ store resume per jobId
+//   const [resumes, setResumes] = useState({});
+//   const [coverLetters, setCoverLetters] = useState({});
+//   const [appliedJobs, setAppliedJobs] = useState([]);
+
+//   useEffect(() => {
+//     fetchJobs();
+//     fetchAppliedJobs();
+//   }, []);
+
+//   useEffect(() => {
+//   console.log("Applied Jobs:", appliedJobs);
+// }, [appliedJobs]);
+
+//   const fetchJobs = async () => {
+//     try {
+//       const res = await getAllJobs();
+//       setJobs(res.data);
+//     } catch (err) {
+//       console.error(err);
+//     }
+//   };
+
+//   const fetchAppliedJobs = async () => {
+//   try {
+//     const res = await getMyApplications();
+//     setAppliedJobs(res.data);
+//   } catch (err) {
+//     console.error(err);
+//   }
+// };
+
+//   // ✅ handle file per job
+//   const handleFileChange = (jobId, file) => {
+//     setResumes((prev) => ({
+//       ...prev,
+//       [jobId]: file,
+//     }));
+//   };
+
+//   // ✅ handle cover letter per job
+//   const handleCoverLetterChange = (jobId, value) => {
+//     setCoverLetters((prev) => ({
+//       ...prev,
+//       [jobId]: value,
+//     }));
+//   };
+
+//   // ✅ updated apply function
+//   const handleApply = async (jobId) => {
+//   try {
+//     const resume = resumes[jobId];
+//     const coverLetter = coverLetters[jobId] || "";
+
+//     if (!resume) {
+//       alert("Please upload resume");
+//       return;
+//     }
+
+//     const formData = new FormData();
+//     formData.append("Resume", resume);
+//     formData.append("CoverLetter", coverLetter);
+
+//     await applyToJob(jobId, formData);
+
+//     // ✅ mark as applied
+//     setAppliedJobs((prev) => {
+//   if (prev.includes(jobId)) return prev; // prevent duplicates
+//   return [...prev, jobId];
+// });
+
+//     setTimeout(() => {
+//       alert("Applied successfully");
+//     }, 100);
+
+//     alert("Applied successfully");
+
+//   } catch (err) {
+//     console.error(err.response);
+//     alert(JSON.stringify(err.response?.data));
+//   }
+// };
+
+//   return (
+//     <div>
+//       <h3>Browse Jobs</h3>
+
+//       {jobs.length === 0 ? (
+//         <p>No jobs available</p>
+//       ) : (
+//         jobs.map((job) => (
+//           <div
+//             key={job.id}
+//             style={{
+//               border: "1px solid #ddd",
+//               padding: "15px",
+//               marginBottom: "15px",
+//               borderRadius: "8px"
+//             }}
+//           >
+//             <h3>{job.title}</h3>
+
+//             <p>{job.description}</p>
+
+//             <p><strong>Budget:</strong> ₹{job.budget}</p>
+
+//             <p><strong>Location:</strong> {job.location}</p>
+
+//             {/* ✅ Resume Upload */}
+//             <input
+//               type="file"
+//               onChange={(e) =>
+//                 handleFileChange(job.id, e.target.files[0])
+//               }
+//             />
+
+//             <br /><br />
+
+//             {/* ✅ Cover Letter */}
+//             <textarea
+//               placeholder="Cover Letter"
+//               value={coverLetters[job.id] || ""}
+//               onChange={(e) =>
+//                 handleCoverLetterChange(job.id, e.target.value)
+//               }
+//             />
+
+//             <br /><br />
+
+//              {/* ✅ SMART APPLY BUTTON */}
+//             {appliedJobs.includes(Number(job.id)) ? (
+//               <button disabled style={{ background: "gray", color: "white" }}>
+//                 Applied
+//               </button>
+//             ) : (
+//               <button
+//                 onClick={() => handleApply(job.id)}
+//                 disabled={!resumes[job.id]} // 🔥 disabled until resume uploaded
+//               >
+//                 Apply
+//               </button>
+//             )}
+//           </div>
+//         ))
+//       )}
+//     </div>
+//   );
+// }
+
 import { useEffect, useState } from "react";
 import { getAllJobs, applyToJob, getMyApplications } from "../../api/jobApi";
 
 export default function SeekerJobs() {
-
   const [jobs, setJobs] = useState([]);
+  const [applications, setApplications] = useState([]);
 
-  // ✅ store resume per jobId
   const [resumes, setResumes] = useState({});
   const [coverLetters, setCoverLetters] = useState({});
-  const [appliedJobs, setAppliedJobs] = useState([]);
 
   useEffect(() => {
     fetchJobs();
-    fetchAppliedJobs();
+    fetchApplications();
   }, []);
-
-  useEffect(() => {
-  console.log("Applied Jobs:", appliedJobs);
-}, [appliedJobs]);
 
   const fetchJobs = async () => {
     try {
@@ -28,16 +178,23 @@ export default function SeekerJobs() {
     }
   };
 
-  const fetchAppliedJobs = async () => {
-  try {
-    const res = await getMyApplications();
-    setAppliedJobs(res.data);
-  } catch (err) {
-    console.error(err);
-  }
-};
+  const fetchApplications = async () => {
+    try {
+      const res = await getMyApplications();
+      console.log("Applications API:", res.data); // 🔥 DEBUG
+      setApplications(res.data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
-  // ✅ handle file per job
+  // 🔥 FIXED: supports both jobId and nested job.id
+  const getApplication = (jobId) => {
+    return applications.find(
+      (app) => app.jobId === jobId || app.job?.id === jobId
+    );
+  };
+
   const handleFileChange = (jobId, file) => {
     setResumes((prev) => ({
       ...prev,
@@ -45,7 +202,6 @@ export default function SeekerJobs() {
     }));
   };
 
-  // ✅ handle cover letter per job
   const handleCoverLetterChange = (jobId, value) => {
     setCoverLetters((prev) => ({
       ...prev,
@@ -53,40 +209,42 @@ export default function SeekerJobs() {
     }));
   };
 
-  // ✅ updated apply function
   const handleApply = async (jobId) => {
-  try {
-    const resume = resumes[jobId];
-    const coverLetter = coverLetters[jobId] || "";
+    try {
+      const resume = resumes[jobId];
+      const coverLetter = coverLetters[jobId] || "";
 
-    if (!resume) {
-      alert("Please upload resume");
-      return;
-    }
+      if (!resume) {
+        alert("Please upload resume");
+        return;
+      }
 
-    const formData = new FormData();
-    formData.append("Resume", resume);
-    formData.append("CoverLetter", coverLetter);
+      const formData = new FormData();
+      formData.append("Resume", resume);
+      formData.append("CoverLetter", coverLetter);
 
-    await applyToJob(jobId, formData);
+      await applyToJob(jobId, formData);
 
-    // ✅ mark as applied
-    setAppliedJobs((prev) => {
-  if (prev.includes(jobId)) return prev; // prevent duplicates
-  return [...prev, jobId];
-});
-
-    setTimeout(() => {
       alert("Applied successfully");
-    }, 100);
 
-    alert("Applied successfully");
+      fetchApplications(); // refresh
 
-  } catch (err) {
-    console.error(err.response);
-    alert(JSON.stringify(err.response?.data));
-  }
-};
+    } catch (err) {
+      console.error(err.response);
+      alert(err.response?.data || "Failed to apply");
+    }
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "Approved":
+        return "green";
+      case "Rejected":
+        return "red";
+      default:
+        return "orange";
+    }
+  };
 
   return (
     <div>
@@ -95,60 +253,67 @@ export default function SeekerJobs() {
       {jobs.length === 0 ? (
         <p>No jobs available</p>
       ) : (
-        jobs.map((job) => (
-          <div
-            key={job.id}
-            style={{
-              border: "1px solid #ddd",
-              padding: "15px",
-              marginBottom: "15px",
-              borderRadius: "8px"
-            }}
-          >
-            <h3>{job.title}</h3>
+        jobs.map((job) => {
+          const application = getApplication(job.id);
 
-            <p>{job.description}</p>
+          return (
+            <div
+              key={job.id}
+              style={{
+                border: "1px solid #ddd",
+                padding: "15px",
+                marginBottom: "15px",
+                borderRadius: "8px",
+              }}
+            >
+              <h3>{job.title}</h3>
+              <p>{job.description}</p>
+              <p><strong>Budget:</strong> ₹{job.budget}</p>
+              <p><strong>Location:</strong> {job.location}</p>
 
-            <p><strong>Budget:</strong> ₹{job.budget}</p>
+              {/* ✅ STATUS DISPLAY */}
+              {application && (
+                <p>
+                  <strong>Status:</strong>{" "}
+                  <span style={{ color: getStatusColor(application.status), fontWeight: "bold" }}>
+                    {application.status}
+                  </span>
+                </p>
+              )}
 
-            <p><strong>Location:</strong> {job.location}</p>
+              {/* ✅ APPLY SECTION */}
+              {!application && (
+                <>
+                  <input
+                    type="file"
+                    onChange={(e) =>
+                      handleFileChange(job.id, e.target.files[0])
+                    }
+                  />
 
-            {/* ✅ Resume Upload */}
-            <input
-              type="file"
-              onChange={(e) =>
-                handleFileChange(job.id, e.target.files[0])
-              }
-            />
+                  <br /><br />
 
-            <br /><br />
+                  <textarea
+                    placeholder="Cover Letter"
+                    value={coverLetters[job.id] || ""}
+                    onChange={(e) =>
+                      handleCoverLetterChange(job.id, e.target.value)
+                    }
+                  />
 
-            {/* ✅ Cover Letter */}
-            <textarea
-              placeholder="Cover Letter"
-              value={coverLetters[job.id] || ""}
-              onChange={(e) =>
-                handleCoverLetterChange(job.id, e.target.value)
-              }
-            />
+                  <br /><br />
 
-            <br /><br />
-
-             {/* ✅ SMART APPLY BUTTON */}
-            {appliedJobs.includes(Number(job.id)) ? (
-              <button disabled style={{ background: "gray", color: "white" }}>
-                Applied
-              </button>
-            ) : (
-              <button
-                onClick={() => handleApply(job.id)}
-                disabled={!resumes[job.id]} // 🔥 disabled until resume uploaded
-              >
-                Apply
-              </button>
-            )}
-          </div>
-        ))
+                  <button
+                    onClick={() => handleApply(job.id)}
+                    disabled={!resumes[job.id]}
+                  >
+                    Apply
+                  </button>
+                </>
+              )}
+            </div>
+          );
+        })
       )}
     </div>
   );
