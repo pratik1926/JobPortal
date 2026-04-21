@@ -11,5 +11,8 @@ namespace JobPortal.Application.Interfaces
     {
         Task<User> RegisterUserAsync(User user);
         Task<User?> GetUserByEmailAsync(string email);
+        Task<User?> GetUserByRefreshTokenAsync(string refreshToken);
+        Task UpdateUserAsync(User user);
+
     }
 }
