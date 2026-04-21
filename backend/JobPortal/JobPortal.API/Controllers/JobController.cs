@@ -6,6 +6,7 @@ using System.Security.Claims;
 using JobPortal.API.DTOs;
 using Microsoft.EntityFrameworkCore;
 using JobPortal.Application.DTOs;
+using JobPortal.Infrastructure.Repositories;
 namespace JobPortal.API.Controllers
 {
     [ApiController]
@@ -15,15 +16,17 @@ namespace JobPortal.API.Controllers
         private readonly IJobService _jobService;
         private readonly IApplicationService _applicationService;
         private readonly IFileService _fileService;
+        private readonly IJobRepository _jobRepository;
 
         public JobController(
             IJobService jobService,
             IApplicationService applicationService,
-            IFileService fileService)
+            IFileService fileService,             IJobRepository jobRepository)
         {
             _jobService = jobService;
             _applicationService = applicationService;
             _fileService = fileService;
+            _jobRepository = jobRepository;
         }
 
         // 🔥 USER ID EXTRACTOR
@@ -214,6 +217,61 @@ namespace JobPortal.API.Controllers
             );
 
             return Ok(new { message = "Application status updated successfully" });
+        }
+
+
+        [Authorize(Roles = "Provider")]
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateJob(int id, UpdateJobDto dto)
+        {
+            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+
+            if (userIdClaim == null)
+                return Unauthorized("User ID not found in token");
+
+            var userId = int.Parse(userIdClaim.Value);
+
+            var job = await _jobRepository.GetJobByIdAsync(id);
+
+            if (job == null)
+                return NotFound("Job not found");
+
+            // 🔥 IMPORTANT: ownership check
+            if (job.ProviderId != userId)
+                return Forbid("You can only edit your own jobs");
+
+            job.Title = dto.Title;
+            job.Description = dto.Description;
+            job.Budget = dto.Budget;
+            job.Location = dto.Location;
+            job.Skills = dto.Skills;
+
+            await _jobRepository.UpdateJobAsync(job);
+
+            return Ok(job);
+        }
+
+        [Authorize(Roles = "Provider")]
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteJob(int id)
+        {
+            var userId = GetUserId();
+
+            if (userId == null)
+                return Unauthorized("User not found");
+
+            var job = await _jobRepository.GetJobByIdAsync(id);
+
+            if (job == null)
+                return NotFound("Job not found");
+
+            // 🔒 ownership check
+            if (job.ProviderId != userId.Value)
+                return Forbid("You can only delete your own jobs");
+
+            await _jobRepository.DeleteJobAsync(id);
+
+            return Ok(new { message = "Job deleted successfully" });
         }
     }
 }
