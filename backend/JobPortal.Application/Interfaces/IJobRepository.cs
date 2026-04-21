@@ -10,6 +10,7 @@ namespace JobPortal.Application.Interfaces
         Task<Job?> GetJobByIdAsync(int id);
         Task<Job> CreateJobAsync(Job job);
         Task<bool> DeleteJobAsync(int id);
+        Task UpdateJobAsync(Job job);
 
         // ✅ APPLICATION METHODS
 

@@ -82,22 +82,53 @@ public class UserController : ControllerBase
         Response.Cookies.Append("refreshToken", refreshToken, new CookieOptions
         {
             HttpOnly = true,
-            Secure = false,
-            SameSite = SameSiteMode.Lax,
+            Secure = true,
+            SameSite = SameSiteMode.None,
+            Path = "/",
             Expires = DateTime.UtcNow.AddDays(7)
         });
 
         return Ok(new { token = accessToken });
     }
 
-    [HttpGet("test-refresh")]
-    public async Task<IActionResult> TestRefresh(string token)
+    [HttpPost("refresh")]
+    public async Task<IActionResult> RefreshToken()
     {
-        var user = await _userRepository.GetUserByRefreshTokenAsync(token);
+        var refreshToken = Request.Cookies["refreshToken"];
 
-        if (user == null)
-            return NotFound("User not found");
+        if (string.IsNullOrEmpty(refreshToken))
+            return Unauthorized("No refresh token");
 
-        return Ok(user.Email);
+        var user = await _userRepository.GetUserByRefreshTokenAsync(refreshToken);
+
+        if (user == null || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
+            return Unauthorized("Invalid or expired refresh token");
+
+        var newAccessToken = _jwtTokenGenerator.GenerateToken(user);
+
+        return Ok(new { token = newAccessToken });
+    }
+
+    [HttpPost("logout")]
+    public async Task<IActionResult> Logout()
+    {
+        var refreshToken = Request.Cookies["refreshToken"];
+
+        if (!string.IsNullOrEmpty(refreshToken))
+        {
+            var user = await _userRepository.GetUserByRefreshTokenAsync(refreshToken);
+
+            if (user != null)
+            {
+                user.RefreshToken = null;
+                user.RefreshTokenExpiryTime = null;
+
+                await _userRepository.UpdateUserAsync(user);
+            }
+        }
+
+        Response.Cookies.Delete("refreshToken");
+
+        return Ok("Logged out successfully");
     }
 }

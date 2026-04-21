@@ -26,7 +26,8 @@ namespace JobPortal.Application.Services
                 Description = dto.Description,
                 Budget = dto.Budget,
                 Location = dto.Location,
-                ProviderId = providerId
+                ProviderId = providerId,
+                Skills = dto.Skills ?? ""
             };
 
             await _jobRepository.CreateJobAsync(job);

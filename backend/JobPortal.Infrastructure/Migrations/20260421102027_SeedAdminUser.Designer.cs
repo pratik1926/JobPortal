@@ -4,6 +4,7 @@ using JobPortal.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace JobPortal.Infrastructure.Migrations
 {
     [DbContext(typeof(JobPortalDbContext))]
-    partial class JobPortalDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260421102027_SeedAdminUser")]
+    partial class SeedAdminUser
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -87,6 +90,7 @@ namespace JobPortal.Infrastructure.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Skills")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Title")
@@ -140,7 +144,7 @@ namespace JobPortal.Infrastructure.Migrations
                             Id = 999,
                             Email = "admin@test.com",
                             Name = "",
-                            PasswordHash = "AQAAAAIAAYagAAAAEIkvqIZWgQYGMqCOcM/CEPlqhh1AHV98cjgADdcVXOGgpQpFb0xc2IqM0eRcLCA6/A==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEBWseZpJs0g++RHrBEMqNNThr8ed6GKjMVDQ7sKnTLYMK+TeqpWwCjdj3g8u44S+Kw==",
                             Role = "Admin"
                         });
                 });

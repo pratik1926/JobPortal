@@ -13,6 +13,8 @@ namespace JobPortal.Application.Interfaces
         Task<User?> GetUserByEmailAsync(string email);
         Task<User?> GetUserByRefreshTokenAsync(string refreshToken);
         Task UpdateUserAsync(User user);
+        Task<List<User>> GetAllUsersAsync();
+        Task<bool> DeleteUserAsync(int id);
 
     }
 }

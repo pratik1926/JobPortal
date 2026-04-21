@@ -103,5 +103,11 @@ namespace JobPortal.Infrastructure.Repositories
                 .Include(a => a.Job) // 🔥 VERY IMPORTANT
                 .FirstOrDefaultAsync(a => a.Id == applicationId);
         }
+
+        public async Task UpdateJobAsync(Job job)
+        {
+            _context.Jobs.Update(job);
+            await _context.SaveChangesAsync();
+        }
     }
 }

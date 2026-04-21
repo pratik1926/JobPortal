@@ -3,34 +3,33 @@ import { useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 
 export default function ProtectedRoute({ children, role }) {
-  const token = useContext(AuthContext);
+  const { token, loading } = useContext(AuthContext);
 
+  // 🔥 Wait until auth check completes
+  if (loading) {
+    return <div className="flex justify-center items-center h-screen">Loading...</div>;
+  }
+
+  // ❌ No token → go login
   if (!token) {
-    return <Navigate to="/login" />;
+    return <Navigate to="/login" replace />;
   }
 
-  // 🔥 FIX: ensure token is string
-  const tokenString = typeof token === "string" ? token : token?.token;
-
-  if (!tokenString) {
-    return <Navigate to="/login" />;
-  }
-
-  // 🔥 decode safely
+  // 🔥 Decode JWT
   let userRole = null;
 
   try {
-    const payload = JSON.parse(atob(tokenString.split(".")[1]));
+    const payload = JSON.parse(atob(token.split(".")[1]));
     userRole =
       payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
   } catch (err) {
-    console.error("Invalid token format", err);
-    return <Navigate to="/login" />;
+    console.error("Invalid token", err);
+    return <Navigate to="/login" replace />;
   }
 
-  // 🔒 role check
+  // 🔒 Role check
   if (role && userRole !== role) {
-    return <Navigate to="/" />;
+    return <Navigate to="/" replace />;
   }
 
   return children;
