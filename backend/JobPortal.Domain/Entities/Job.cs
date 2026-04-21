@@ -22,6 +22,7 @@ namespace JobPortal.Domain.Entities
         public User Provider { get; set; }
 
         public List<Application> Application { get; set; } = new();
+        public string? Skills { get; set; } // store as comma-separated for now
 
     }
 }

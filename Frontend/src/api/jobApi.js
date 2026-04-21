@@ -40,3 +40,14 @@ export const updateApplicationStatus = (applicationId, status) => {
     status: status,
   });
 };
+
+export const deleteJob = async(jobId) => {
+  const res = await api.delete(`/Job/${jobId}`);
+  return res.data;
+}
+
+export const updateJob = async (id, data) => {
+  const res = await api.put(`/Job/${id}`, data);
+  return res.data;
+};
+
