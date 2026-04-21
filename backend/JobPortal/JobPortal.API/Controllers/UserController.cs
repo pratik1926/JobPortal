@@ -47,19 +47,57 @@ public class UserController : ControllerBase
     }
 
     // ✅ LOGIN API (JWT)
+    //[HttpPost("login")]
+    //public async Task<IActionResult> Login(LoginDto dto)
+    //{
+    //    if (string.IsNullOrEmpty(dto.Email) || string.IsNullOrEmpty(dto.Password))
+    //        return BadRequest(new { message = "Email and Password are required" });
+
+    //    var user = await _userRepository.GetUserByEmailAsync(dto.Email);
+
+    //    if (user == null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
+    //        return Unauthorized("Invalid credentials");
+
+    //    var token = _jwtTokenGenerator.GenerateToken(user);
+
+    //    return Ok(new { token });
+    //}
+
     [HttpPost("login")]
     public async Task<IActionResult> Login(LoginDto dto)
     {
-        if (string.IsNullOrEmpty(dto.Email) || string.IsNullOrEmpty(dto.Password))
-            return BadRequest(new { message = "Email and Password are required" });
-
         var user = await _userRepository.GetUserByEmailAsync(dto.Email);
 
         if (user == null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
             return Unauthorized("Invalid credentials");
 
-        var token = _jwtTokenGenerator.GenerateToken(user);
+        var accessToken = _jwtTokenGenerator.GenerateToken(user);
+        var refreshToken = _jwtTokenGenerator.GenerateRefreshToken();
 
-        return Ok(new { token });
+        user.RefreshToken = refreshToken;
+        user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+
+        await _userRepository.UpdateUserAsync(user);
+
+        Response.Cookies.Append("refreshToken", refreshToken, new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = false,
+            SameSite = SameSiteMode.Lax,
+            Expires = DateTime.UtcNow.AddDays(7)
+        });
+
+        return Ok(new { token = accessToken });
+    }
+
+    [HttpGet("test-refresh")]
+    public async Task<IActionResult> TestRefresh(string token)
+    {
+        var user = await _userRepository.GetUserByRefreshTokenAsync(token);
+
+        if (user == null)
+            return NotFound("User not found");
+
+        return Ok(user.Email);
     }
 }
