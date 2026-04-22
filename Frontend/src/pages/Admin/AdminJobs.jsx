@@ -59,7 +59,7 @@
 // }
 
 import { useEffect, useState } from "react";
-import { getAllJobs } from "../../api/adminApi";
+import { getAllJobsAdmin } from "../../api/adminApi";
 import JobCard from "../../components/JobCard";
 import JobDetailsModal from "../../components/JobDetailsModal";
 import toast from "react-hot-toast";
@@ -70,7 +70,7 @@ export default function AdminJobs() {
 
   const fetchJobs = async () => {
     try {
-      const res = await getAllJobs();
+      const res = await getAllJobsAdmin();
       setJobs(res.data);
     } catch {
       toast.error("Failed to load jobs");
