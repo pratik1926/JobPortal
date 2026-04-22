@@ -19,6 +19,13 @@ import ProtectedRoute from "./components/ProtectedRoute";
 // 🧩 Layouts
 import ProviderLayout from "./layouts/ProviderLayout";
 import SeekerLayout from "./layouts/SeekerLayout";
+import AdminLayout from "./layouts/AdminLayout";
+
+// ✅ Admin
+import AdminDashboard from "./pages/Admin/AdminDashboard";
+import AdminUsers from "./pages/Admin/AdminUsers";
+import AdminJobs from "./pages/Admin/AdminJobs";
+
 
 function App() {
   return (
@@ -29,6 +36,20 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+
+        {/* 🔒 ADMIN ROUTES  */}
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute role="Admin">
+              <AdminLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<AdminDashboard />} />
+          <Route path="users" element={<AdminUsers />} />
+          <Route path="jobs" element={<AdminJobs />} />
+        </Route>
 
         {/* 🔒 PROVIDER ROUTES */}
         <Route
