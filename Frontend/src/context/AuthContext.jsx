@@ -120,6 +120,82 @@
 //   );
 // };
 
+// import { createContext, useState, useEffect } from "react";
+// import api from "../api/axios";
+
+// export const AuthContext = createContext();
+
+// export const AuthProvider = ({ children }) => {
+//   const [token, setToken] = useState(null);
+//   const [loading, setLoading] = useState(true);
+
+//   // 🔥 Refresh token (only when needed)
+//   const refreshToken = async () => {
+//     try {
+//       const res = await api.post(
+//         "/User/refresh",
+//         {},
+//         { withCredentials: true }
+//       );
+
+//       const newToken = res.data.token;
+
+//       setToken(newToken);
+//       localStorage.setItem("token", newToken);
+
+//       return newToken;
+//     } catch (err) {
+//       console.error("Refresh failed:", err);
+//       setToken(null);
+//       localStorage.removeItem("token");
+//       return null;
+//     }
+//   };
+
+//   // 🔥 FIXED: Load token properly
+//   useEffect(() => {
+//     const initAuth = async () => {
+//       const storedToken = localStorage.getItem("token");
+
+//       if (storedToken) {
+//         // ✅ Use existing token first (DO NOT override immediately)
+//         setToken(storedToken);
+//       } else {
+//         // 🔥 Only try refresh if no token
+//         await refreshToken();
+//       }
+
+//       setLoading(false);
+//     };
+
+//     initAuth();
+//   }, []);
+
+//   // 🔐 Login
+//   const login = (token) => {
+//     setToken(token);
+//     localStorage.setItem("token", token);
+//   };
+
+//   // 🚪 Logout
+//   const logout = async () => {
+//     try {
+//       await api.post("/User/logout", {}, { withCredentials: true });
+//     } catch (err) {
+//       console.error("Logout failed:", err);
+//     }
+
+//     setToken(null);
+//     localStorage.removeItem("token");
+//   };
+
+//   return (
+//     <AuthContext.Provider value={{ token, login, logout, loading }}>
+//       {children}
+//     </AuthContext.Provider>
+//   );
+// };
+
 import { createContext, useState, useEffect } from "react";
 import api from "../api/axios";
 
@@ -127,70 +203,100 @@ export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(null);
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // 🔥 Refresh token (only when needed)
+  const isTokenExpired = (token) => {
+    try {
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      return payload.exp * 1000 < Date.now();
+    } catch {
+      return true;
+    }
+  };
+
+  const getUserFromToken = (token) => {
+    try {
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      return {
+        email: payload.email,
+        role:
+          payload.role ||
+          payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"],
+      };
+    } catch {
+      return null;
+    }
+  };
+
   const refreshToken = async () => {
     try {
-      const res = await api.post(
-        "/User/refresh",
-        {},
-        { withCredentials: true }
-      );
-
+      const res = await api.post("/User/refresh");
       const newToken = res.data.token;
 
       setToken(newToken);
+      setUser(getUserFromToken(newToken));
       localStorage.setItem("token", newToken);
 
       return newToken;
     } catch (err) {
       console.error("Refresh failed:", err);
       setToken(null);
+      setUser(null);
       localStorage.removeItem("token");
       return null;
     }
   };
 
-  // 🔥 FIXED: Load token properly
   useEffect(() => {
-    const initAuth = async () => {
-      const storedToken = localStorage.getItem("token");
+  const initAuth = async () => {
+    const storedToken = localStorage.getItem("token");
 
-      if (storedToken) {
-        // ✅ Use existing token first (DO NOT override immediately)
+    if (storedToken) {
+      if (!isTokenExpired(storedToken)) {
+        // ✅ valid token
         setToken(storedToken);
+        setUser(getUserFromToken(storedToken));
       } else {
-        // 🔥 Only try refresh if no token
-        await refreshToken();
+        // 🔥 ONLY try refresh if token existed
+        const newToken = await refreshToken();
+
+        if (!newToken) {
+          setToken(null);
+          setUser(null);
+        }
       }
+    }
 
-      setLoading(false);
-    };
+    // ❌ DO NOTHING if no token exists
+    // This prevents infinite refresh loop
 
-    initAuth();
-  }, []);
+    setLoading(false);
+  };
 
-  // 🔐 Login
+  initAuth();
+}, []);
+
   const login = (token) => {
     setToken(token);
+    setUser(getUserFromToken(token));
     localStorage.setItem("token", token);
   };
 
-  // 🚪 Logout
   const logout = async () => {
     try {
-      await api.post("/User/logout", {}, { withCredentials: true });
+      await api.post("/User/logout");
     } catch (err) {
       console.error("Logout failed:", err);
     }
 
     setToken(null);
+    setUser(null);
     localStorage.removeItem("token");
   };
 
   return (
-    <AuthContext.Provider value={{ token, login, logout, loading }}>
+    <AuthContext.Provider value={{ token, user, login, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );

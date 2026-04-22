@@ -1,5 +1,5 @@
 import { useState, useContext, useEffect } from "react";
-import { loginUser } from "../features/auth/authApi";
+import { loginUser } from "../api/authApi";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { Mail, Lock, Loader2, Eye, EyeOff } from "lucide-react";

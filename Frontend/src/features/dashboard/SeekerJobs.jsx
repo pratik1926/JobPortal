@@ -464,7 +464,7 @@
 // }\
 
 import { useEffect, useState } from "react";
-import axios from "axios";
+import { getAllJobs } from "../../api/jobApi";
 import {
   Search,
   MapPin,
@@ -487,7 +487,7 @@ export default function SeekerJobs() {
 
   const fetchJobs = async () => {
     try {
-      const res = await axios.get("https://localhost:7240/api/Job");
+      const res = await getAllJobs();
       setJobs(res.data);
     } catch {
       toast.error("Failed to load jobs");
