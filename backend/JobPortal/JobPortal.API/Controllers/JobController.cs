@@ -7,6 +7,7 @@ using JobPortal.API.DTOs;
 using Microsoft.EntityFrameworkCore;
 using JobPortal.Application.DTOs;
 using JobPortal.Infrastructure.Repositories;
+using JobPortal.Infrastructure.Persistence;
 namespace JobPortal.API.Controllers
 {
     [ApiController]
@@ -18,10 +19,12 @@ namespace JobPortal.API.Controllers
         private readonly IFileService _fileService;
         private readonly IJobRepository _jobRepository;
 
+
         public JobController(
             IJobService jobService,
             IApplicationService applicationService,
-            IFileService fileService,             IJobRepository jobRepository)
+            IFileService fileService, 
+            IJobRepository jobRepository)
         {
             _jobService = jobService;
             _applicationService = applicationService;
@@ -273,5 +276,9 @@ namespace JobPortal.API.Controllers
 
             return Ok(new { message = "Job deleted successfully" });
         }
+
+        
+
+
     }
 }
