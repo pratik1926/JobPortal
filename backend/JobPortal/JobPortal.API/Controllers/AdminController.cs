@@ -14,10 +14,11 @@ namespace JobPortal.API.Controllers
         private readonly IUserRepository _userRepository;
         
         private readonly IJobRepository _jobRepository;
-        public AdminController(IUserRepository userRepository)
+        public AdminController(IUserRepository userRepository, IJobRepository jobRepository)
         {
             
             _userRepository = userRepository;
+            _jobRepository = jobRepository;
         }
 
         // ✅ GET all users
