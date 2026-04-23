@@ -1,15 +1,17 @@
 ﻿using System.Net;
 using System.Text.Json;
-
+using Microsoft.Extensions.Logging;
 namespace JobPortal.API.Middleware
 {
     public class ExceptionMiddleware
     {
         private readonly RequestDelegate _next;
+        private readonly ILogger<ExceptionMiddleware> _logger;
 
-        public ExceptionMiddleware(RequestDelegate next)
+        public ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger)
         {
             _next = next;
+            _logger = logger;
         }
 
         public async Task Invoke(HttpContext context)
@@ -20,6 +22,8 @@ namespace JobPortal.API.Middleware
             }
             catch (Exception ex)
             {
+                // 🔥 LOG THE ERROR
+                _logger.LogError(ex, "Unhandled exception occurred");
                 await HandleExceptionAsync(context, ex);
             }
         }
