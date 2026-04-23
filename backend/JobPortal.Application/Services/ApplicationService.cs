@@ -77,21 +77,56 @@ namespace JobPortal.Application.Services
     public class ApplicationService : IApplicationService
     {
         private readonly IJobRepository _jobRepository;
+        private readonly IFileService _fileService;
 
         // ✅ ONLY repository injection (clean architecture)
-        public ApplicationService(IJobRepository jobRepository)
+        public ApplicationService(IJobRepository jobRepository, IFileService fileService)
         {
             _jobRepository = jobRepository;
+            _fileService = fileService;
         }
 
         // 🔥 APPLY TO JOB
+        //public async Task ApplyToJobAsync(int jobId, int seekerId, ApplyJobDto dto)
+        //{
+        //    var application = new ApplicationEntity
+        //    {
+        //        JobId = jobId,
+        //        SeekerId = seekerId,
+        //        ResumeUrl = dto.ResumeUrl,
+        //        CoverLetter = dto.CoverLetter,
+        //        Status = "Applied",
+        //        AppliedAt = DateTime.UtcNow
+        //    };
+
+        //    await _jobRepository.ApplyToJobAsync(application);
+        //}
+
+        // 🔥 APPLY TO JOB (CLEAN + CORRECT)
         public async Task ApplyToJobAsync(int jobId, int seekerId, ApplyJobDto dto)
         {
+            // 🔒 Prevent duplicate application
+            var alreadyApplied = await _jobRepository.HasUserApplied(jobId, seekerId);
+            if (alreadyApplied)
+                throw new Exception("You already applied to this job");
+
+            // 🔒 Validate file
+            if (dto.Resume == null || dto.Resume.Length == 0)
+                throw new Exception("Resume is required");
+
+            var extension = Path.GetExtension(dto.FileName).ToLower();
+            if (extension != ".pdf")
+                throw new Exception("Only PDF files are allowed");
+
+            // 🔥 Save file
+            var resumeUrl = await _fileService.SaveResumeAsync(dto.Resume, dto.FileName);
+
+            // 🔥 Create application entity
             var application = new ApplicationEntity
             {
                 JobId = jobId,
                 SeekerId = seekerId,
-                ResumeUrl = dto.ResumeUrl,
+                ResumeUrl = resumeUrl,
                 CoverLetter = dto.CoverLetter,
                 Status = "Applied",
                 AppliedAt = DateTime.UtcNow

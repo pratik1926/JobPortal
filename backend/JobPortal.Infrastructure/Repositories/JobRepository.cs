@@ -109,5 +109,25 @@ namespace JobPortal.Infrastructure.Repositories
             _context.Jobs.Update(job);
             await _context.SaveChangesAsync();
         }
+
+        public async Task<List<JobDto>> GetAllJobsForAdminAsync()
+        {
+            return await _context.Jobs
+        .Include(j => j.Provider)
+        .Select(j => new JobDto
+        {
+            Id = j.Id,
+            Title = j.Title,
+            Description = j.Description,
+            Budget = j.Budget,
+            Location = j.Location,
+            CreatedAt = j.CreatedAt,
+            Skills = j.Skills,
+            ProviderName = j.Provider.Name,
+            ProviderEmail = j.Provider.Email
+        })
+        .OrderByDescending(j => j.CreatedAt)
+        .ToListAsync();
+        }
     }
 }
