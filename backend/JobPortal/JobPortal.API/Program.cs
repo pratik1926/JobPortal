@@ -8,6 +8,9 @@ using System.Text;
 using Microsoft.OpenApi.Models;
 using JobPortal.Application.Services;
 using JobPortal.Infrastructure.Services;
+using FluentValidation;
+using FluentValidation.AspNetCore;
+using JobPortal.API.Validators;
 
 namespace JobPortal.API
 {
@@ -20,6 +23,8 @@ namespace JobPortal.API
             // Add services to the container.
 
             builder.Services.AddControllers();
+            builder.Services.AddFluentValidationAutoValidation();
+            builder.Services.AddValidatorsFromAssemblyContaining<RegisterUserDtoValidator>();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             //builder.Services.AddSwaggerGen();
@@ -117,6 +122,8 @@ namespace JobPortal.API
 
             app.UseHttpsRedirection();
             app.UseCors("AllowFrontend");
+
+            app.UseMiddleware<JobPortal.API.Middleware.ExceptionMiddleware>();
 
             app.UseAuthentication();
 

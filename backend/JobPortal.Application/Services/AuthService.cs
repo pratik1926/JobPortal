@@ -18,12 +18,12 @@ namespace JobPortal.Application.Services
 
         public async Task<User> RegisterAsync(RegisterUserDto dto)
         {
-            if (string.IsNullOrEmpty(dto.Email) || string.IsNullOrEmpty(dto.Password))
-                throw new Exception("Email and Passwords are required");
+            //if (string.IsNullOrEmpty(dto.Email) || string.IsNullOrEmpty(dto.Password))
+            //    throw new ArgumentException("Email and Passwords are required");
 
             var existingUser = await _userRepository.GetUserByEmailAsync(dto.Email);
             if (existingUser != null)
-                throw new Exception("User already exist");
+                throw new InvalidOperationException("User already exist");
 
             var user = new User
             {
@@ -41,7 +41,7 @@ namespace JobPortal.Application.Services
             var user = await _userRepository.GetUserByEmailAsync(dto.Email);
 
             if (user == null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
-                throw new Exception("Invalid credentials");
+                throw new UnauthorizedAccessException("Invalid credentials");
 
             var accessToken = _jwtTokenGenerator.GenerateToken(user);
             var refreshToken = _jwtTokenGenerator.GenerateRefreshToken();
@@ -57,12 +57,12 @@ namespace JobPortal.Application.Services
         public async Task<string> RefreshTokenAsync(string refreshToken)
         {
             if (string.IsNullOrEmpty(refreshToken))
-                throw new Exception("No refresh token");
+                throw new UnauthorizedAccessException("No refresh token");
 
             var user = await _userRepository.GetUserByRefreshTokenAsync(refreshToken);
 
             if (user == null || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
-                throw new Exception("Invalid or expired refresh token");
+                throw new UnauthorizedAccessException("Invalid or expired refresh token");
 
             return _jwtTokenGenerator.GenerateToken(user);
         }

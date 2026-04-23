@@ -128,15 +128,14 @@ namespace JobPortal.API.Controllers
         [Authorize(Roles = "Seeker")]
         public async Task<IActionResult> ApplyToJob(int jobId, [FromForm] ApplyJobRequest request)
         {
-            try
-            {
+            
                 var userId = GetUserId();
 
                 if (userId == null)
-                    return Unauthorized("Invalid user token");
+                    throw new UnauthorizedAccessException("Invalid user token");
 
                 if (request.Resume == null || request.Resume.Length == 0)
-                    return BadRequest("Resume is required");
+                    throw new ArgumentException("Resume is required");
 
                 // 🔥 Convert IFormFile → byte[]
                 using var ms = new MemoryStream();
@@ -153,11 +152,7 @@ namespace JobPortal.API.Controllers
                 await _applicationService.ApplyToJobAsync(jobId, userId.Value, dto);
 
                 return Ok(new { message = "Applied successfully" });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
+            
         }
 
 
