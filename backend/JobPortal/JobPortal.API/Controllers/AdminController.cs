@@ -12,12 +12,11 @@ namespace JobPortal.API.Controllers
     public class AdminController : ControllerBase
     {
         private readonly IUserRepository _userRepository;
-        private readonly JobPortalDbContext _context;
-
-        public AdminController(IUserRepository userRepository,
-            JobPortalDbContext context)
+        
+        private readonly IJobRepository _jobRepository;
+        public AdminController(IUserRepository userRepository)
         {
-            _context = context;
+            
             _userRepository = userRepository;
         }
 
@@ -45,22 +44,7 @@ namespace JobPortal.API.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetAllJobsForAdmin()
         {
-            var jobs = await _context.Jobs
-                .Include(j => j.Provider)
-                .Select(j => new JobDto
-                {
-                    Id = j.Id,
-                    Title = j.Title,
-                    Description = j.Description,
-                    Budget = j.Budget,
-                    Location = j.Location,
-                    CreatedAt = j.CreatedAt,
-                    Skills = j.Skills,
-                    ProviderName = j.Provider.Name,
-                    ProviderEmail = j.Provider.Email
-                })
-                .OrderByDescending(j => j.CreatedAt)
-                .ToListAsync();
+            var jobs = await _jobRepository.GetAllJobsForAdminAsync();
 
             return Ok(jobs);
         }

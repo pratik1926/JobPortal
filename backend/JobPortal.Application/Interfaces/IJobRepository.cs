@@ -28,5 +28,7 @@ namespace JobPortal.Application.Interfaces
 
         Task<ApplicationEntity> GetApplicationByIdAsync(int applicationId);
 
+        Task<List<JobDto>> GetAllJobsForAdminAsync();
+
     }
 }

@@ -1,6 +1,7 @@
 ﻿
 public class ApplyJobDto
 {
-    public string ResumeUrl { get; set; } = null!;
+    public byte[] Resume { get; set; } = null!;
+    public string FileName { get; set; } = null!;
     public string? CoverLetter { get; set; }
 }

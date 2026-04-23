@@ -54,7 +54,9 @@ namespace JobPortal.API
 
             builder.Services.AddDbContext<JobPortalDbContext>(options =>
             options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-            
+
+            builder.Services.AddScoped<IAuthService, AuthService>();
+
             builder.Services.AddScoped<IJobRepository, JobRepository>();
 
             builder.Services.AddScoped<IUserRepository, UserRepository>();

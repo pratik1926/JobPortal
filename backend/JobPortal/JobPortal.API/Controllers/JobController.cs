@@ -5,9 +5,6 @@ using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using JobPortal.API.DTOs;
 using Microsoft.EntityFrameworkCore;
-using JobPortal.Application.DTOs;
-using JobPortal.Infrastructure.Repositories;
-using JobPortal.Infrastructure.Persistence;
 namespace JobPortal.API.Controllers
 {
     [ApiController]
@@ -16,20 +13,16 @@ namespace JobPortal.API.Controllers
     {
         private readonly IJobService _jobService;
         private readonly IApplicationService _applicationService;
-        private readonly IFileService _fileService;
-        private readonly IJobRepository _jobRepository;
+        
 
 
         public JobController(
             IJobService jobService,
-            IApplicationService applicationService,
-            IFileService fileService, 
-            IJobRepository jobRepository)
+            IApplicationService applicationService)
         {
             _jobService = jobService;
             _applicationService = applicationService;
-            _fileService = fileService;
-            _jobRepository = jobRepository;
+            
         }
 
         // 🔥 USER ID EXTRACTOR
@@ -72,7 +65,65 @@ namespace JobPortal.API.Controllers
             return Ok(new { message = "Job Created Successfully" });
         }
 
-        // 🔥 APPLY TO JOB (FINAL CLEAN VERSION)
+        //// 🔥 APPLY TO JOB (FINAL CLEAN VERSION)
+        //[HttpPost("apply/{jobId}")]
+        //[Authorize(Roles = "Seeker")]
+        //public async Task<IActionResult> ApplyToJob(int jobId, [FromForm] ApplyJobRequest request)
+        //{
+        //    try
+        //    {
+        //        var userId = GetUserId();
+
+        //        if (userId == null)
+        //            return Unauthorized("Invalid user token");
+        //        // 🔥 PREVENT DUPLICATE APPLY
+        //        var alreadyApplied = await _applicationService.HasUserApplied(jobId, userId.Value);
+
+        //        if (alreadyApplied)
+        //        {
+        //            return BadRequest("You already applied to this job");
+        //        }
+
+        //        var resume = request.Resume;
+        //        var coverLetter = request.CoverLetter;
+
+        //        // ✅ VALIDATION
+        //        if (resume == null || resume.Length == 0)
+        //            return BadRequest("Resume is required");
+
+        //        var extension = Path.GetExtension(resume.FileName).ToLower();
+
+        //        if (extension != ".pdf")
+        //            return BadRequest("Only PDF files are allowed");
+
+        //        // 🔥 CONVERT FILE → BYTE ARRAY
+        //        byte[] fileBytes;
+        //        using (var ms = new MemoryStream())
+        //        {
+        //            await resume.CopyToAsync(ms);
+        //            fileBytes = ms.ToArray();
+        //        }
+
+        //        // 🔥 SAVE USING FILE SERVICE
+        //        var resumeUrl = await _fileService.SaveResumeAsync(fileBytes, resume.FileName);
+
+        //        // 🔥 CLEAN DTO (Application Layer)
+        //        var dto = new ApplyJobDto
+        //        {
+        //            ResumeUrl = resumeUrl,
+        //            CoverLetter = coverLetter
+        //        };
+
+        //        await _applicationService.ApplyToJobAsync(jobId, userId.Value, dto);
+
+        //        return Ok(new { message = "Applied successfully" });
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return BadRequest(new { message = ex.Message });
+        //    }
+        //}
+
         [HttpPost("apply/{jobId}")]
         [Authorize(Roles = "Seeker")]
         public async Task<IActionResult> ApplyToJob(int jobId, [FromForm] ApplyJobRequest request)
@@ -83,44 +134,22 @@ namespace JobPortal.API.Controllers
 
                 if (userId == null)
                     return Unauthorized("Invalid user token");
-                // 🔥 PREVENT DUPLICATE APPLY
-                var alreadyApplied = await _applicationService.HasUserApplied(jobId, userId.Value);
 
-                if (alreadyApplied)
-                {
-                    return BadRequest("You already applied to this job");
-                }
-
-                var resume = request.Resume;
-                var coverLetter = request.CoverLetter;
-
-                // ✅ VALIDATION
-                if (resume == null || resume.Length == 0)
+                if (request.Resume == null || request.Resume.Length == 0)
                     return BadRequest("Resume is required");
 
-                var extension = Path.GetExtension(resume.FileName).ToLower();
+                // 🔥 Convert IFormFile → byte[]
+                using var ms = new MemoryStream();
+                await request.Resume.CopyToAsync(ms);
 
-                if (extension != ".pdf")
-                    return BadRequest("Only PDF files are allowed");
-
-                // 🔥 CONVERT FILE → BYTE ARRAY
-                byte[] fileBytes;
-                using (var ms = new MemoryStream())
-                {
-                    await resume.CopyToAsync(ms);
-                    fileBytes = ms.ToArray();
-                }
-
-                // 🔥 SAVE USING FILE SERVICE
-                var resumeUrl = await _fileService.SaveResumeAsync(fileBytes, resume.FileName);
-
-                // 🔥 CLEAN DTO (Application Layer)
                 var dto = new ApplyJobDto
                 {
-                    ResumeUrl = resumeUrl,
-                    CoverLetter = coverLetter
+                    Resume = ms.ToArray(),
+                    FileName = request.Resume.FileName,
+                    CoverLetter = request.CoverLetter
                 };
 
+                // ✅ Pass DTO (NOT request)
                 await _applicationService.ApplyToJobAsync(jobId, userId.Value, dto);
 
                 return Ok(new { message = "Applied successfully" });
@@ -130,6 +159,7 @@ namespace JobPortal.API.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+
 
         [HttpGet("my-jobs")]
         [Authorize(Roles = "Provider")]
@@ -223,39 +253,81 @@ namespace JobPortal.API.Controllers
         }
 
 
-        [Authorize(Roles = "Provider")]
+        //[Authorize(Roles = "Provider")]
+        //[HttpPut("{id}")]
+        //public async Task<IActionResult> UpdateJob(int id, UpdateJobDto dto)
+        //{
+        //    var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+
+        //    if (userIdClaim == null)
+        //        return Unauthorized("User ID not found in token");
+
+        //    var userId = int.Parse(userIdClaim.Value);
+
+        //    var job = await _jobRepository.GetJobByIdAsync(id);
+
+        //    if (job == null)
+        //        return NotFound("Job not found");
+
+        //    // 🔥 IMPORTANT: ownership check
+        //    if (job.ProviderId != userId)
+        //        return Forbid("You can only edit your own jobs");
+
+        //    job.Title = dto.Title;
+        //    job.Description = dto.Description;
+        //    job.Budget = dto.Budget;
+        //    job.Location = dto.Location;
+        //    job.Skills = dto.Skills;
+
+        //    await _jobRepository.UpdateJobAsync(job);
+
+        //    return Ok(job);
+        //}
+
+        // 🔥 UPDATE JOB (CLEANED)
         [HttpPut("{id}")]
+        [Authorize(Roles = "Provider")]
         public async Task<IActionResult> UpdateJob(int id, UpdateJobDto dto)
         {
-            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+            var userId = GetUserId();
 
-            if (userIdClaim == null)
-                return Unauthorized("User ID not found in token");
+            if (userId == null)
+                return Unauthorized("User ID not found");
 
-            var userId = int.Parse(userIdClaim.Value);
+            await _jobService.UpdateJobAsync(id, dto, userId.Value);
 
-            var job = await _jobRepository.GetJobByIdAsync(id);
-
-            if (job == null)
-                return NotFound("Job not found");
-
-            // 🔥 IMPORTANT: ownership check
-            if (job.ProviderId != userId)
-                return Forbid("You can only edit your own jobs");
-
-            job.Title = dto.Title;
-            job.Description = dto.Description;
-            job.Budget = dto.Budget;
-            job.Location = dto.Location;
-            job.Skills = dto.Skills;
-
-            await _jobRepository.UpdateJobAsync(job);
-
-            return Ok(job);
+            return Ok(new { message = "Job updated successfully" });
         }
 
-        [Authorize(Roles = "Provider")]
+
+
+
+        //[Authorize(Roles = "Provider")]
+        //[HttpDelete("{id}")]
+        //public async Task<IActionResult> DeleteJob(int id)
+        //{
+        //    var userId = GetUserId();
+
+        //    if (userId == null)
+        //        return Unauthorized("User not found");
+
+        //    var job = await _jobRepository.GetJobByIdAsync(id);
+
+        //    if (job == null)
+        //        return NotFound("Job not found");
+
+        //    // 🔒 ownership check
+        //    if (job.ProviderId != userId.Value)
+        //        return Forbid("You can only delete your own jobs");
+
+        //    await _jobRepository.DeleteJobAsync(id);
+
+        //    return Ok(new { message = "Job deleted successfully" });
+        //}
+
+        // 🔥 DELETE JOB (CLEANED)
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Provider")]
         public async Task<IActionResult> DeleteJob(int id)
         {
             var userId = GetUserId();
@@ -263,21 +335,13 @@ namespace JobPortal.API.Controllers
             if (userId == null)
                 return Unauthorized("User not found");
 
-            var job = await _jobRepository.GetJobByIdAsync(id);
-
-            if (job == null)
-                return NotFound("Job not found");
-
-            // 🔒 ownership check
-            if (job.ProviderId != userId.Value)
-                return Forbid("You can only delete your own jobs");
-
-            await _jobRepository.DeleteJobAsync(id);
+            await _jobService.DeleteJobAsync(id, userId.Value);
 
             return Ok(new { message = "Job deleted successfully" });
         }
 
-        
+
+
 
 
     }
