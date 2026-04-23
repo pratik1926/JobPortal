@@ -1,4 +1,4 @@
-using JobPortal.Infrastructure.Persistence;
+﻿using JobPortal.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using JobPortal.Application.Interfaces;
 using JobPortal.Infrastructure.Repositories;
@@ -8,6 +8,10 @@ using System.Text;
 using Microsoft.OpenApi.Models;
 using JobPortal.Application.Services;
 using JobPortal.Infrastructure.Services;
+using FluentValidation;
+using FluentValidation.AspNetCore;
+using JobPortal.API.Validators;
+using Serilog;
 
 namespace JobPortal.API
 {
@@ -15,11 +19,25 @@ namespace JobPortal.API
     {
         public static void Main(string[] args)
         {
+
+            // 🔥 STEP 1 — Configure Serilog FIRST
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Information()
+                .Enrich.FromLogContext()
+                .WriteTo.Console()
+                .WriteTo.File("logs/log-.txt", rollingInterval: RollingInterval.Day)
+                .CreateLogger();
+
             var builder = WebApplication.CreateBuilder(args);
+
+            // 🔥 STEP 2 — Replace default logger
+            builder.Host.UseSerilog();
 
             // Add services to the container.
 
             builder.Services.AddControllers();
+            builder.Services.AddFluentValidationAutoValidation();
+            builder.Services.AddValidatorsFromAssemblyContaining<RegisterUserDtoValidator>();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             //builder.Services.AddSwaggerGen();
@@ -98,7 +116,7 @@ namespace JobPortal.API
             builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
 
             builder.Services.AddScoped<IJobService, JobService>();
-            builder.Services.AddScoped<IJobRepository, JobRepository>();
+            //builder.Services.AddScoped<IJobRepository, JobRepository>();
 
             builder.Services.AddScoped<IApplicationService, ApplicationService>();
 
@@ -117,6 +135,11 @@ namespace JobPortal.API
 
             app.UseHttpsRedirection();
             app.UseCors("AllowFrontend");
+
+            // 🔥 STEP 3 — Add request logging
+            app.UseSerilogRequestLogging();
+
+            app.UseMiddleware<JobPortal.API.Middleware.ExceptionMiddleware>();
 
             app.UseAuthentication();
 

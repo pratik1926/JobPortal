@@ -154,8 +154,7 @@ public class UserController : ControllerBase
     [HttpPost("register")]
     public async Task<IActionResult> Register(RegisterUserDto dto)
     {
-        try
-        {
+        
             var user = await _authService.RegisterAsync(dto);
 
             return StatusCode(201, new
@@ -163,19 +162,13 @@ public class UserController : ControllerBase
                 message = "User Registered Successfully",
                 UserId = user.Id
             });
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(new { message = ex.Message });
-        }
+        
     }
 
     // ✅ LOGIN
     [HttpPost("login")]
     public async Task<IActionResult> Login(LoginDto dto)
     {
-        try
-        {
             var (token, refreshToken) = await _authService.LoginAsync(dto);
 
             Response.Cookies.Append("refreshToken", refreshToken, new CookieOptions
@@ -188,29 +181,20 @@ public class UserController : ControllerBase
             });
 
             return Ok(new { token });
-        }
-        catch (Exception ex)
-        {
-            return Unauthorized(ex.Message);
-        }
+        
     }
 
     // ✅ REFRESH
     [HttpPost("refresh")]
     public async Task<IActionResult> RefreshToken()
     {
-        try
-        {
+        
             var refreshToken = Request.Cookies["refreshToken"];
 
             var token = await _authService.RefreshTokenAsync(refreshToken);
 
             return Ok(new { token });
-        }
-        catch (Exception ex)
-        {
-            return Unauthorized(ex.Message);
-        }
+        
     }
 
     // ✅ LOGOUT
