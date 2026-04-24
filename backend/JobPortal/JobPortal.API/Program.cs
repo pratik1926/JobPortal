@@ -78,6 +78,7 @@ namespace JobPortal.API
             builder.Services.AddScoped<IJobRepository, JobRepository>();
 
             builder.Services.AddScoped<IUserRepository, UserRepository>();
+            builder.Services.AddScoped<IUserService, UserService>();
 
             var key = Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]);
 
@@ -121,6 +122,10 @@ namespace JobPortal.API
             builder.Services.AddScoped<IApplicationService, ApplicationService>();
 
             builder.Services.AddScoped<IFileService, FileService>();
+            
+            builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
+
+            builder.Services.AddScoped<INotificationService, NotificationService>();
 
             
 

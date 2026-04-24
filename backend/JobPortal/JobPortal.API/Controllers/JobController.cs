@@ -13,16 +13,19 @@ namespace JobPortal.API.Controllers
     {
         private readonly IJobService _jobService;
         private readonly IApplicationService _applicationService;
-        
-
+        private readonly INotificationService _notificationService;
+        private readonly IUserService _userService;
 
         public JobController(
             IJobService jobService,
-            IApplicationService applicationService)
+            IApplicationService applicationService,
+            INotificationService notificationService,
+            IUserService userService)
         {
             _jobService = jobService;
             _applicationService = applicationService;
-            
+            _notificationService = notificationService;
+            _userService = userService;
         }
 
         // 🔥 USER ID EXTRACTOR
@@ -151,7 +154,24 @@ namespace JobPortal.API.Controllers
                 // ✅ Pass DTO (NOT request)
                 await _applicationService.ApplyToJobAsync(jobId, userId.Value, dto);
 
-                return Ok(new { message = "Applied successfully" });
+            var job = await _jobService.GetJobByIdAsync(jobId);
+            // 🔥 CREATE NOTIFICATION
+            await _notificationService.CreateAsync(new CreateNotificationDto
+                {
+                    UserId = userId.Value,
+                    Message = $"You applied for '{job.Title}'"
+                });
+
+                // 🔥 GET JOB DETAILS
+
+                // 🔥 NOTIFY PROVIDER
+                await _notificationService.CreateAsync(new CreateNotificationDto
+                {
+                    UserId = job.ProviderId,
+                    Message = $"New applicant for your job '{job.Title}'"
+                });
+
+            return Ok(new { message = "Applied successfully" });
             
         }
 
