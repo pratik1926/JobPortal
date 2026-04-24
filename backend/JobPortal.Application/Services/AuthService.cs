@@ -40,7 +40,7 @@ namespace JobPortal.Application.Services
         {
             var user = await _userRepository.GetUserByEmailAsync(dto.Email);
 
-            if (user == null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
+            if (user == null || user.IsDeleted || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
                 throw new UnauthorizedAccessException("Invalid credentials");
 
             var accessToken = _jwtTokenGenerator.GenerateToken(user);
@@ -61,7 +61,7 @@ namespace JobPortal.Application.Services
 
             var user = await _userRepository.GetUserByRefreshTokenAsync(refreshToken);
 
-            if (user == null || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
+            if (user == null ||user.IsDeleted || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
                 throw new UnauthorizedAccessException("Invalid or expired refresh token");
 
             return _jwtTokenGenerator.GenerateToken(user);

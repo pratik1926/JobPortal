@@ -29,16 +29,27 @@ namespace JobPortal.API.Controllers
             return Ok(users);
         }
 
-        // ✅ DELETE user
+        //// ✅ DELETE user
+        //[HttpDelete("users/{id}")]
+        //public async Task<IActionResult> DeleteUser(int id)
+        //{
+        //    var success = await _userRepository.DeleteUserAsync(id);
+
+        //    if (!success)
+        //        return NotFound("User not found");
+
+        //    return Ok("User deleted successfully");
+        //}
+
         [HttpDelete("users/{id}")]
         public async Task<IActionResult> DeleteUser(int id)
         {
-            var success = await _userRepository.DeleteUserAsync(id);
+            var result = await _userRepository.DeleteUserAsync(id);
 
-            if (!success)
-                return NotFound("User not found");
+            if (!result)
+                return NotFound(new { message = "User not found" });
 
-            return Ok("User deleted successfully");
+            return Ok(new { message = "User deleted successfully" });
         }
 
         [HttpGet("admin/all")]
