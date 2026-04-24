@@ -417,4 +417,4 @@ FodyWeavers.xsd
 *.msm
 *.msp
 
-JobPortal.API/wwwroot/resumes/
+**/wwwroot/resumes/
