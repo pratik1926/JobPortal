@@ -40,7 +40,7 @@ public class UserRepository : IUserRepository
 
     public async Task<List<User>> GetAllUsersAsync()
     {
-        return await _context.Users.ToListAsync();
+        return await _context.Users.Where(u => !u.IsDeleted).ToListAsync();
     }
 
     public async Task<bool> DeleteUserAsync(int id)
@@ -49,7 +49,8 @@ public class UserRepository : IUserRepository
 
         if (user == null) return false;
 
-        _context.Users.Remove(user);
+        user.IsDeleted = true;
+
         await _context.SaveChangesAsync();
 
         return true;

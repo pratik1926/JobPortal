@@ -33,7 +33,7 @@ namespace JobPortal.API.Middleware
             context.Response.ContentType = "application/json";
 
             var statusCode = HttpStatusCode.InternalServerError;
-            var message = "Something went wrong";
+            var message = ex.Message;
 
             // 🔥 Customize error types
             switch (ex)

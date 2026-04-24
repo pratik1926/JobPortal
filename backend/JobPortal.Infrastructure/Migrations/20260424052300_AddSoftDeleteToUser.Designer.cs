@@ -4,6 +4,7 @@ using JobPortal.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace JobPortal.Infrastructure.Migrations
 {
     [DbContext(typeof(JobPortalDbContext))]
-    partial class JobPortalDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260424052300_AddSoftDeleteToUser")]
+    partial class AddSoftDeleteToUser
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -112,9 +115,6 @@ namespace JobPortal.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -142,9 +142,8 @@ namespace JobPortal.Infrastructure.Migrations
                         {
                             Id = 999,
                             Email = "admin@test.com",
-                            IsDeleted = false,
                             Name = "",
-                            PasswordHash = "$2a$11$wPQyRRYOtYrrM/ptbSSBxu/31EdyLVvCXklD4EaJGVk5dTeLw9Dq2",
+                            PasswordHash = "$2a$11$CY67AK1MXEMNYfDGBXiRveKpYXbdr8FaKK4C55I44vBAiARF1OkE2",
                             Role = "Admin"
                         });
                 });
