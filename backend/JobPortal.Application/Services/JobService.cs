@@ -92,5 +92,10 @@ namespace JobPortal.Application.Services
 
             await _jobRepository.DeleteJobAsync(jobId);
         }
+
+        public async Task<Job> GetJobByIdAsync(int jobId)
+        {
+            return await _jobRepository.GetJobByIdAsync(jobId);
+        }
     }
 }

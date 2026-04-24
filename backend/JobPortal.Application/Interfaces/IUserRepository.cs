@@ -16,5 +16,7 @@ namespace JobPortal.Application.Interfaces
         Task<List<User>> GetAllUsersAsync();
         Task<bool> DeleteUserAsync(int id);
 
+        Task<User?> GetUserByIdAsync(int userId);
+
     }
 }
