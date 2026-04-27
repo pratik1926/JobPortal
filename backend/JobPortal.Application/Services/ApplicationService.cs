@@ -78,12 +78,13 @@ namespace JobPortal.Application.Services
     {
         private readonly IJobRepository _jobRepository;
         private readonly IFileService _fileService;
-
+        private readonly INotificationService _notificationService;
         // ✅ ONLY repository injection (clean architecture)
-        public ApplicationService(IJobRepository jobRepository, IFileService fileService)
+        public ApplicationService(IJobRepository jobRepository, IFileService fileService, INotificationService notificationService)
         {
             _jobRepository = jobRepository;
             _fileService = fileService;
+            _notificationService = notificationService;
         }
 
         // 🔥 APPLY TO JOB
@@ -143,11 +144,13 @@ namespace JobPortal.Application.Services
             return apps.Select(a => new MyApplicationDto
             {
                 Id = a.Id,
+                JobId = a.JobId,
                 JobTitle = a.Job.Title,
                 Location = a.Job.Location,
                 Status = a.Status,
                 AppliedAt = a.AppliedAt,
-                ResumeUrl = a.ResumeUrl
+                ResumeUrl = a.ResumeUrl,
+                CoverLetter = a.CoverLetter
             });
         }
 
@@ -183,6 +186,22 @@ namespace JobPortal.Application.Services
         //}
 
         // 🔥 UPDATE STATUS (UPDATED WITH RULES)
+        //public async Task UpdateApplicationStatusAsync(int applicationId, string newStatus, int providerId)
+        //{
+        //    var app = await _jobRepository.GetApplicationByIdAsync(applicationId);
+
+        //    if (app == null || app.Job.ProviderId != providerId)
+        //        throw new UnauthorizedAccessException("You are not allowed to update this application");
+
+        //    // 🔥 STATE MACHINE CHECK
+        //    if (!IsValidTransition(app.Status, newStatus))
+        //    {
+        //        throw new InvalidOperationException($"Invalid status transition: {app.Status} → {newStatus}");
+        //    }
+
+        //    await _jobRepository.UpdateApplicationStatusAsync(applicationId, newStatus);
+        //}
+
         public async Task UpdateApplicationStatusAsync(int applicationId, string newStatus, int providerId)
         {
             var app = await _jobRepository.GetApplicationByIdAsync(applicationId);
@@ -196,7 +215,21 @@ namespace JobPortal.Application.Services
                 throw new InvalidOperationException($"Invalid status transition: {app.Status} → {newStatus}");
             }
 
+            // ✅ UPDATE STATUS
             await _jobRepository.UpdateApplicationStatusAsync(applicationId, newStatus);
+
+            // 🔔 NOTIFY SEEKER
+            var message = newStatus == "Approved"
+                ? $"Your application for '{app.Job.Title}' has been approved 🎉"
+                : newStatus == "Rejected"
+                ? $"Your application for '{app.Job.Title}' was rejected"
+                : $"Your application status for '{app.Job.Title}' is now {newStatus}";
+
+            await _notificationService.CreateAsync(new CreateNotificationDto
+            {
+                UserId = app.SeekerId,
+                Message = message
+            });
         }
 
 

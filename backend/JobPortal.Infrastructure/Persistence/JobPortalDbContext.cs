@@ -48,6 +48,8 @@ public class JobPortalDbContext : DbContext
     public DbSet<Job> Jobs { get; set; }
     public DbSet<Domain.Entities.Application> Applications { get; set; }
 
+    public DbSet<Notification> Notifications { get; set; }
+    public DbSet<EmailVerification> EmailVerifications { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

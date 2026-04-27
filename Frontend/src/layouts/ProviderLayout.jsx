@@ -1,15 +1,15 @@
 import { Link, Outlet, useNavigate } from "react-router-dom";
 import { useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
+import NotificationBell from "../features/notifications/NotificationBell";
 
 export default function ProviderLayout() {
   const navigate = useNavigate();
 
-  // 🔥 get logout from context
   const { logout } = useContext(AuthContext);
 
   const handleLogout = () => {
-    logout(); // ✅ clears token properly
+    logout();
     navigate("/login", { replace: true });
   };
 
@@ -53,18 +53,37 @@ export default function ProviderLayout() {
         </button>
       </div>
 
-      {/* 🔥 MAIN CONTENT */}
-      <div
-        style={{
-          flex: 1,
-          padding: "20px",
-          overflowY: "auto",
-          background: "#f9fafb"
-        }}
-      >
-        <Outlet />
-      </div>
+      {/* 🔥 MAIN */}
+      <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
 
+        {/* 🔥 TOP BAR (ADDED) */}
+        <div
+          style={{
+            height: "60px",
+            background: "white",
+            borderBottom: "1px solid #e5e7eb",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "flex-end",
+            padding: "0 20px"
+          }}
+        >
+          <NotificationBell />
+        </div>
+
+        {/* 🔥 CONTENT */}
+        <div
+          style={{
+            flex: 1,
+            padding: "20px",
+            overflowY: "auto",
+            background: "#f9fafb"
+          }}
+        >
+          <Outlet />
+        </div>
+
+      </div>
     </div>
   );
 }
