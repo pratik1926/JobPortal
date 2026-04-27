@@ -12,6 +12,7 @@ using FluentValidation;
 using FluentValidation.AspNetCore;
 using JobPortal.API.Validators;
 using Serilog;
+using JobPortal.Infrastructure.Services;
 
 namespace JobPortal.API
 {
@@ -127,7 +128,11 @@ namespace JobPortal.API
 
             builder.Services.AddScoped<INotificationService, NotificationService>();
 
-            
+            builder.Services.AddScoped<IVerificationService, VerificationService>();
+
+            builder.Services.AddScoped<IEmailService, EmailService>();
+            builder.Services.AddScoped<IEmailVerificationRepository, EmailVerificationRepository>();
+
 
             var app = builder.Build();
 
