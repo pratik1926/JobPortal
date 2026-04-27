@@ -159,14 +159,27 @@ export default function Login() {
 
         {/* FOOTER */}
         <p className="text-center text-sm text-slate-500 mt-6">
-          Don’t have an account?{" "}
-          <span
-            onClick={() => navigate("/register")}
-            className="text-blue-600 font-medium cursor-pointer hover:underline"
-          >
-            Register
-          </span>
-        </p>
+
+  {/* 🔥 Forgot Password */}
+  <span
+    onClick={() => navigate("/forgot-password")}
+    className="block text-blue-600 cursor-pointer hover:underline mb-2"
+  >
+    Forgot Password?
+  </span>
+
+  {/* Register */}
+  <span>
+    Don’t have an account?{" "}
+    <span
+      onClick={() => navigate("/register")}
+      className="text-blue-600 font-medium cursor-pointer hover:underline"
+    >
+      Register
+    </span>
+  </span>
+
+</p>
 
       </div>
     </div>

@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import 'react-toastify/dist/ReactToastify.css';
 
 // 🌐 Pages
 import Register from "./pages/Register";
@@ -26,6 +27,7 @@ import AdminDashboard from "./pages/Admin/AdminDashboard";
 import AdminUsers from "./pages/Admin/AdminUsers";
 import AdminJobs from "./pages/Admin/AdminJobs";
 
+import ForgotPassword from "./pages/ForgotPassword";
 
 function App() {
   return (
@@ -36,6 +38,9 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+
+        {/* 🔥 ADD THIS */}
+        <Route path="/forgot-password" element={<ForgotPassword />} />
 
         {/* 🔒 ADMIN ROUTES  */}
         <Route
@@ -75,8 +80,12 @@ function App() {
           <Route path="/my-applications" element={<MyApplications />} />
         </Route>
 
+        
+
       </Routes>
     </BrowserRouter>
+
+    
   );
 }
 

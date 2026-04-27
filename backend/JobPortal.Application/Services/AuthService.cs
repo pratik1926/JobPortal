@@ -97,15 +97,18 @@ namespace JobPortal.Application.Services
         private readonly IUserRepository _userRepository;
         private readonly IJwtTokenGenerator _jwtTokenGenerator;
         private readonly IEmailVerificationRepository _emailVerificationRepository;
+        private readonly IVerificationService _verificationService;
 
         public AuthService(
             IUserRepository userRepository,
             IJwtTokenGenerator jwtTokenGenerator,
-            IEmailVerificationRepository emailVerificationRepository)
+            IEmailVerificationRepository emailVerificationRepository,
+            IVerificationService verificationService)
         {
             _userRepository = userRepository;
             _jwtTokenGenerator = jwtTokenGenerator;
             _emailVerificationRepository = emailVerificationRepository;
+            _verificationService = verificationService;
         }
 
         public async Task<User> RegisterAsync(RegisterUserDto dto)
@@ -189,6 +192,38 @@ namespace JobPortal.Application.Services
                     await _userRepository.UpdateUserAsync(user);
                 }
             }
+        }
+
+        public async Task ForgotPasswordAsync(string email)
+        {
+            var user = await _userRepository.GetUserByEmailAsync(email);
+            if (user == null)
+                throw new Exception("User not found");
+
+            // reuse OTP system
+            await _verificationService.SendCodeAsync(email);
+        }
+
+        public async Task ResetPasswordAsync(string email, string newPassword)
+        {
+            var user = await _userRepository.GetUserByEmailAsync(email);
+
+            if (user == null)
+                throw new Exception("User not found");
+
+            // check verification
+            var verification = await _emailVerificationRepository.GetLatestVerifiedAsync(email);
+
+            if (verification == null)
+                throw new Exception("Please verify OTP first");
+
+            // update password
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
+
+            await _userRepository.UpdateUserAsync(user);
+
+            // consume OTP
+            await _emailVerificationRepository.MarkAsUsedAsync(verification);
         }
     }
 }

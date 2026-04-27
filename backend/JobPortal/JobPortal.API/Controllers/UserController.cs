@@ -1,4 +1,5 @@
 ﻿using JobPortal.Application.DTOs;
+using JobPortal.Application.DTOs.Auth;
 using JobPortal.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -64,5 +65,19 @@ public class UserController : ControllerBase
         Response.Cookies.Delete("refreshToken");
 
         return Ok("Logged out successfully");
+    }
+
+    [HttpPost("forgot-password")]
+    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto dto)
+    {
+        await _authService.ForgotPasswordAsync(dto.Email);
+        return Ok("OTP sent to email");
+    }
+
+    [HttpPost("reset-password")]
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto dto)
+    {
+        await _authService.ResetPasswordAsync(dto.Email, dto.NewPassword);
+        return Ok("Password reset successful");
     }
 }

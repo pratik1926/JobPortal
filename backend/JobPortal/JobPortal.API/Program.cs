@@ -10,9 +10,9 @@ using JobPortal.Application.Services;
 using JobPortal.Infrastructure.Services;
 using FluentValidation;
 using FluentValidation.AspNetCore;
-using JobPortal.API.Validators;
 using Serilog;
 using JobPortal.Infrastructure.Services;
+using JobPortal.Application.Validators;
 
 namespace JobPortal.API
 {

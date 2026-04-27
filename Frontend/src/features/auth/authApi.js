@@ -15,3 +15,9 @@ export const sendOtp = (email) => {
 export const verifyOtp = (email, code) => {
   return api.post("/Email/verify-otp", { email, code });
 };
+
+export const forgotPassword = (email) =>
+  api.post("/User/forgot-password", { email });
+
+export const resetPassword = (data) =>
+  api.post("/User/reset-password", data);
