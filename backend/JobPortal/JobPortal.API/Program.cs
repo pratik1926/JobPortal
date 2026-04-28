@@ -13,6 +13,10 @@ using FluentValidation.AspNetCore;
 using Serilog;
 using JobPortal.Infrastructure.Services;
 using JobPortal.Application.Validators;
+using JobPortal.API.Hubs;
+using JobPortal.API.Services;
+using JobPortal.API.Infrastructure;
+using Microsoft.AspNetCore.SignalR;
 
 namespace JobPortal.API
 {
@@ -101,6 +105,25 @@ namespace JobPortal.API
                     ValidAudience = builder.Configuration["Jwt:Audience"],
                     IssuerSigningKey = new SymmetricSecurityKey(key)
                 };
+                // 🔥 CRITICAL FOR SIGNALR
+                options.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        var accessToken = context.Request.Query["access_token"];
+
+                        var path = context.HttpContext.Request.Path;
+
+                        if (!string.IsNullOrEmpty(accessToken) &&
+                            path.StartsWithSegments("/hubs/notification"))
+                        {
+                            context.Token = accessToken;
+                        }
+
+                        return Task.CompletedTask;
+                    }
+                };
+
             });
 
             builder.Services.AddCors(options =>
@@ -133,7 +156,11 @@ namespace JobPortal.API
             builder.Services.AddScoped<IEmailService, EmailService>();
             builder.Services.AddScoped<IEmailVerificationRepository, EmailVerificationRepository>();
 
+            builder.Services.AddSignalR();
+            builder.Services.AddScoped<INotificationSender, SignalRNotificationSender>();
 
+            // 🔥 USER MAPPING (VERY IMPORTANT)
+            builder.Services.AddSingleton<IUserIdProvider, SignalRUserIdProvider>();
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -154,6 +181,8 @@ namespace JobPortal.API
             app.UseAuthentication();
 
             app.UseAuthorization();
+
+            app.MapHub<NotificationHub>("/hubs/notification");
 
             app.UseStaticFiles();   
 

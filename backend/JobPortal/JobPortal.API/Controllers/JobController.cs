@@ -13,18 +13,18 @@ namespace JobPortal.API.Controllers
     {
         private readonly IJobService _jobService;
         private readonly IApplicationService _applicationService;
-        private readonly INotificationService _notificationService;
+        
         private readonly IUserService _userService;
 
         public JobController(
             IJobService jobService,
             IApplicationService applicationService,
-            INotificationService notificationService,
+            
             IUserService userService)
         {
             _jobService = jobService;
             _applicationService = applicationService;
-            _notificationService = notificationService;
+           
             _userService = userService;
         }
 
@@ -68,111 +68,82 @@ namespace JobPortal.API.Controllers
             return Ok(new { message = "Job Created Successfully" });
         }
 
-        //// 🔥 APPLY TO JOB (FINAL CLEAN VERSION)
+
         //[HttpPost("apply/{jobId}")]
         //[Authorize(Roles = "Seeker")]
         //public async Task<IActionResult> ApplyToJob(int jobId, [FromForm] ApplyJobRequest request)
         //{
-        //    try
-        //    {
+
         //        var userId = GetUserId();
 
         //        if (userId == null)
-        //            return Unauthorized("Invalid user token");
-        //        // 🔥 PREVENT DUPLICATE APPLY
-        //        var alreadyApplied = await _applicationService.HasUserApplied(jobId, userId.Value);
+        //            throw new UnauthorizedAccessException("Invalid user token");
 
-        //        if (alreadyApplied)
-        //        {
-        //            return BadRequest("You already applied to this job");
-        //        }
+        //        if (request.Resume == null || request.Resume.Length == 0)
+        //            throw new ArgumentException("Resume is required");
 
-        //        var resume = request.Resume;
-        //        var coverLetter = request.CoverLetter;
+        //        // 🔥 Convert IFormFile → byte[]
+        //        using var ms = new MemoryStream();
+        //        await request.Resume.CopyToAsync(ms);
 
-        //        // ✅ VALIDATION
-        //        if (resume == null || resume.Length == 0)
-        //            return BadRequest("Resume is required");
-
-        //        var extension = Path.GetExtension(resume.FileName).ToLower();
-
-        //        if (extension != ".pdf")
-        //            return BadRequest("Only PDF files are allowed");
-
-        //        // 🔥 CONVERT FILE → BYTE ARRAY
-        //        byte[] fileBytes;
-        //        using (var ms = new MemoryStream())
-        //        {
-        //            await resume.CopyToAsync(ms);
-        //            fileBytes = ms.ToArray();
-        //        }
-
-        //        // 🔥 SAVE USING FILE SERVICE
-        //        var resumeUrl = await _fileService.SaveResumeAsync(fileBytes, resume.FileName);
-
-        //        // 🔥 CLEAN DTO (Application Layer)
         //        var dto = new ApplyJobDto
         //        {
-        //            ResumeUrl = resumeUrl,
-        //            CoverLetter = coverLetter
+        //            Resume = ms.ToArray(),
+        //            FileName = request.Resume.FileName,
+        //            CoverLetter = request.CoverLetter
         //        };
 
+        //        // ✅ Pass DTO (NOT request)
         //        await _applicationService.ApplyToJobAsync(jobId, userId.Value, dto);
 
-        //        return Ok(new { message = "Applied successfully" });
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return BadRequest(new { message = ex.Message });
-        //    }
+        //    var job = await _jobService.GetJobByIdAsync(jobId);
+        //    // 🔥 CREATE NOTIFICATION
+        //    await _notificationService.CreateAsync(new CreateNotificationDto
+        //        {
+        //            UserId = userId.Value,
+        //            Message = $"You applied for '{job.Title}'"
+        //        });
+
+        //        // 🔥 GET JOB DETAILS
+
+        //        // 🔥 NOTIFY PROVIDER
+        //        await _notificationService.CreateAsync(new CreateNotificationDto
+        //        {
+        //            UserId = job.ProviderId,
+        //            Message = $"New applicant for your job '{job.Title}'"
+        //        });
+
+        //    return Ok(new { message = "Applied successfully" });
+
         //}
 
         [HttpPost("apply/{jobId}")]
         [Authorize(Roles = "Seeker")]
         public async Task<IActionResult> ApplyToJob(int jobId, [FromForm] ApplyJobRequest request)
         {
-            
-                var userId = GetUserId();
+            var userId = GetUserId();
 
-                if (userId == null)
-                    throw new UnauthorizedAccessException("Invalid user token");
+            if (userId == null)
+                throw new UnauthorizedAccessException("Invalid user token");
 
-                if (request.Resume == null || request.Resume.Length == 0)
-                    throw new ArgumentException("Resume is required");
+            if (request.Resume == null || request.Resume.Length == 0)
+                throw new ArgumentException("Resume is required");
 
-                // 🔥 Convert IFormFile → byte[]
-                using var ms = new MemoryStream();
-                await request.Resume.CopyToAsync(ms);
+            // 🔥 Convert IFormFile → byte[]
+            using var ms = new MemoryStream();
+            await request.Resume.CopyToAsync(ms);
 
-                var dto = new ApplyJobDto
-                {
-                    Resume = ms.ToArray(),
-                    FileName = request.Resume.FileName,
-                    CoverLetter = request.CoverLetter
-                };
+            var dto = new ApplyJobDto
+            {
+                Resume = ms.ToArray(),
+                FileName = request.Resume.FileName,
+                CoverLetter = request.CoverLetter
+            };
 
-                // ✅ Pass DTO (NOT request)
-                await _applicationService.ApplyToJobAsync(jobId, userId.Value, dto);
-
-            var job = await _jobService.GetJobByIdAsync(jobId);
-            // 🔥 CREATE NOTIFICATION
-            await _notificationService.CreateAsync(new CreateNotificationDto
-                {
-                    UserId = userId.Value,
-                    Message = $"You applied for '{job.Title}'"
-                });
-
-                // 🔥 GET JOB DETAILS
-
-                // 🔥 NOTIFY PROVIDER
-                await _notificationService.CreateAsync(new CreateNotificationDto
-                {
-                    UserId = job.ProviderId,
-                    Message = $"New applicant for your job '{job.Title}'"
-                });
+            // ✅ BUSINESS LOGIC HANDLED IN SERVICE
+            await _applicationService.ApplyToJobAsync(jobId, userId.Value, dto);
 
             return Ok(new { message = "Applied successfully" });
-            
         }
 
 
