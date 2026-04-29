@@ -30,5 +30,9 @@ namespace JobPortal.Application.Interfaces
 
         Task<List<JobDto>> GetAllJobsForAdminAsync();
 
+        Task<(List<Job> jobs, int total)> GetPagedJobsAsync(int page, int pageSize);
+
+        Task<(List<JobDto> jobs, int total)> GetPagedJobsForAdminAsync(int page, int pageSize);
+
     }
 }

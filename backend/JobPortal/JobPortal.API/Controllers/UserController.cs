@@ -2,6 +2,8 @@
 using JobPortal.Application.DTOs.Auth;
 using JobPortal.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
+using JobPortal.API.Hubs;
 
 namespace JobPortal.API.Controllers;
 
@@ -10,10 +12,11 @@ namespace JobPortal.API.Controllers;
 public class UserController : ControllerBase
 {
     private readonly IAuthService _authService;
-
-    public UserController(IAuthService authService)
+    private readonly IHubContext<NotificationHub> _hubContext;
+    public UserController(IAuthService authService, IHubContext<NotificationHub> hubContext)
     {
         _authService = authService;
+        _hubContext = hubContext;
     }
 
     [HttpPost("register")]
@@ -79,5 +82,16 @@ public class UserController : ControllerBase
     {
         await _authService.ResetPasswordAsync(dto.Email, dto.NewPassword);
         return Ok("Password reset successful");
+    }
+
+    [HttpGet("test-notification")]
+    public async Task<IActionResult> TestNotification()
+    {
+        await _hubContext.Clients.All.SendAsync("ReceiveNotification", new
+        {
+            message = "Hello from SignalR 🚀"
+        });
+
+        return Ok("Notification sent");
     }
 }

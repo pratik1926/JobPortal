@@ -97,5 +97,16 @@ namespace JobPortal.Application.Services
         {
             return await _jobRepository.GetJobByIdAsync(jobId);
         }
+
+        public async Task<(List<Job> jobs, int total)> GetPagedJobsAsync(int page, int pageSize)
+        {
+            return await _jobRepository.GetPagedJobsAsync(page, pageSize);
+        }
+
+        public async Task<(List<JobDto> jobs, int total)> GetPagedJobsForAdminAsync(int page, int pageSize)
+        {
+            return await _jobRepository.GetPagedJobsForAdminAsync(page, pageSize);
+        }
+
     }
 }

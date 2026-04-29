@@ -87,6 +87,7 @@ namespace JobPortal.Infrastructure.Repositories
         public async Task<List<Job>> GetJobsByProviderId(int providerId)
         {
             return await _context.Jobs
+                .Include(j => j.Provider)
                 .Where(j => j.ProviderId == providerId)
                 .ToListAsync();
         }
@@ -128,6 +129,50 @@ namespace JobPortal.Infrastructure.Repositories
         })
         .OrderByDescending(j => j.CreatedAt)
         .ToListAsync();
+        }
+
+        public async Task<(List<Job> jobs, int total)> GetPagedJobsAsync(int page, int pageSize)
+        {
+            var query = _context.Jobs
+                .Include(j => j.Provider); // 🔥 needed for DTO
+
+            var total = await query.CountAsync();
+
+            var jobs = await query
+                .OrderByDescending(j => j.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (jobs, total);
+        }
+
+        public async Task<(List<JobDto> jobs, int total)> GetPagedJobsForAdminAsync(int page, int pageSize)
+        {
+            var query = _context.Jobs
+                .Include(j => j.Provider);
+
+            var total = await query.CountAsync();
+
+            var jobs = await query
+                .OrderByDescending(j => j.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(j => new JobDto
+                {
+                    Id = j.Id,
+                    Title = j.Title,
+                    Description = j.Description,
+                    Budget = j.Budget,
+                    Location = j.Location,
+                    CreatedAt = j.CreatedAt,
+                    Skills = j.Skills,
+                    ProviderName = j.Provider.Name,
+                    ProviderEmail = j.Provider.Email
+                })
+                .ToListAsync();
+
+            return (jobs, total);
         }
     }
 }

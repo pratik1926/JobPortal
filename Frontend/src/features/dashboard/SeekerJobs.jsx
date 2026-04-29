@@ -488,7 +488,7 @@ export default function SeekerJobs() {
   const fetchJobs = async () => {
     try {
       const res = await getAllJobs();
-      setJobs(res.data);
+      setJobs(res.data.data || []);
     } catch {
       toast.error("Failed to load jobs");
     }
