@@ -47,10 +47,30 @@ namespace JobPortal.API.Controllers
 
         // 🔹 GET ALL JOBS
         [HttpGet]
-        public async Task<IActionResult> GetJobs()
+        public async Task<IActionResult> GetJobs(int page = 1, int pageSize = 10)
         {
-            var jobs = await _jobService.GetAllJobsAsync();
-            return Ok(jobs);
+            var (jobs, total) = await _jobService.GetPagedJobsAsync(page, pageSize);
+
+            var result = jobs.Select(j => new JobDto
+            {
+                Id = j.Id,
+                Title = j.Title,
+                Description = j.Description,
+                Budget = j.Budget,
+                Location = j.Location,
+                CreatedAt = j.CreatedAt,
+                Skills = j.Skills,
+                ProviderName = j.Provider?.Name,
+                ProviderEmail = j.Provider?.Email
+            }).ToList();
+
+            return Ok(new
+            {
+                data = result,
+                total,
+                page,
+                pageSize
+            });
         }
 
         // 🔹 CREATE JOB
@@ -147,6 +167,20 @@ namespace JobPortal.API.Controllers
         }
 
 
+        //[HttpGet("my-jobs")]
+        //[Authorize(Roles = "Provider")]
+        //public async Task<IActionResult> GetMyJobs()
+        //{
+        //    var userId = GetUserId();
+
+        //    if (userId == null)
+        //        return Unauthorized("User ID not found");
+
+        //    var jobs = await _jobService.GetJobsByProviderId(userId.Value);
+
+        //    return Ok(jobs);
+        //}
+
         [HttpGet("my-jobs")]
         [Authorize(Roles = "Provider")]
         public async Task<IActionResult> GetMyJobs()
@@ -158,7 +192,20 @@ namespace JobPortal.API.Controllers
 
             var jobs = await _jobService.GetJobsByProviderId(userId.Value);
 
-            return Ok(jobs);
+            var result = jobs.Select(j => new JobDto
+            {
+                Id = j.Id,
+                Title = j.Title,
+                Description = j.Description,
+                Budget = j.Budget,
+                Location = j.Location,
+                CreatedAt = j.CreatedAt,
+                Skills = j.Skills,
+                ProviderName = j.Provider?.Name,
+                ProviderEmail = j.Provider?.Email
+            }).ToList();
+
+            return Ok(result);
         }
 
 

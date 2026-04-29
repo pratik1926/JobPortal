@@ -20,7 +20,13 @@ import api from "./axios";
 // 👥 USERS
 export const getAllUsers = () => api.get("/Admin/users");
 export const deleteUser = (id) => api.delete(`/Admin/users/${id}`);
+export const unbanUser = (id) => api.put(`/Admin/unban/${id}`);
+
+export const banUser = (id) => api.put(`/Admin/ban/${id}`);
 
 // 💼 JOBS (admin view)
 export const getAllJobsAdmin = () =>
   api.get("/Admin/admin/all");
+
+export const getAnalytics = () => 
+  api.get("/Admin/analytics");

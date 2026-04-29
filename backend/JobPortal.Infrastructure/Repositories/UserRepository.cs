@@ -60,4 +60,47 @@ public class UserRepository : IUserRepository
     {
         return await _context.Users.FindAsync(userId);
     }
+
+    public async Task<bool> BanUserAsync(int id)
+    {
+        var user = await _context.Users.FindAsync(id);
+
+        if (user == null)
+            return false;
+
+        user.IsBanned = true;
+
+        await _context.SaveChangesAsync();
+
+        return true;
+    }
+
+    public async Task<bool> UnbanUserAsync(int id)
+    {
+        var user = await _context.Users.FindAsync(id);
+
+        if (user == null)
+            return false;
+
+        user.IsBanned = false;
+
+        await _context.SaveChangesAsync();
+
+        return true;
+    }
+
+    public async Task<(List<User> users, int total)> GetPagedUsersAsync(int page, int pageSize)
+    {
+        var query = _context.Users.Where(u => !u.IsDeleted);
+
+        var total = await query.CountAsync();
+
+        var users = await query
+            .OrderByDescending(u => u.Id)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return (users, total);
+    }
 }

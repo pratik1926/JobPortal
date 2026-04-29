@@ -1,130 +1,86 @@
 // import { useEffect, useState } from "react";
-// import { getAllUsers, deleteUser } from "../../api/adminApi";
-// import { Trash2, Users, Briefcase, User } from "lucide-react";
+// import { getAllUsers } from "../../api/adminApi";
+// import { Users, Briefcase } from "lucide-react";
+// import { PieChart, Pie, Cell, Tooltip } from "recharts";
 // import toast from "react-hot-toast";
 
 // export default function AdminDashboard() {
-//   const [users, setUsers] = useState([]);
-//   const [search, setSearch] = useState("");
-//   const [page, setPage] = useState(1);
+//   const [stats, setStats] = useState({
+//     total: 0,
+//     seekers: 0,
+//     providers: 0,
+//   });
 
-//   const usersPerPage = 5;
-
-//   // 🔥 FETCH USERS
-//   const fetchUsers = async () => {
-//     try {
-//       const res = await getAllUsers();
-
-//       // ❌ Remove admin
-//       const filtered = res.data.filter((u) => u.role !== "Admin");
-
-//       setUsers(filtered);
-//     } catch {
-//       toast.error("Failed to load users");
-//     }
-//   };
+//   const [chartData, setChartData] = useState([]);
 
 //   useEffect(() => {
-//     fetchUsers();
+//     const loadData = async () => {
+//       try {
+//         const res = await getAllUsers();
+
+//         const users = res.data.filter(u => u.role !== "Admin");
+
+//         const seekers = users.filter(u => u.role === "Seeker").length;
+//         const providers = users.filter(u => u.role === "Provider").length;
+
+//         setStats({
+//           total: users.length,
+//           seekers,
+//           providers,
+//         });
+
+//         setChartData([
+//           { name: "Seekers", value: seekers },
+//           { name: "Providers", value: providers },
+//         ]);
+
+//       } catch {
+//         toast.error("Failed to load dashboard data");
+//       }
+//     };
+
+//     loadData();
 //   }, []);
-
-//   // 🔥 DELETE
-//   const handleDelete = async (id) => {
-//     if (!window.confirm("Delete this user?")) return;
-
-//     try {
-//       await deleteUser(id);
-//       toast.success("User deleted");
-//       fetchUsers();
-//     } catch {
-//       toast.error("Delete failed");
-//     }
-//   };
-
-//   // 🔍 FILTER
-//   const filteredUsers = users.filter((u) =>
-//     u.email.toLowerCase().includes(search.toLowerCase())
-//   );
-
-//   // 📊 PAGINATION
-//   const indexOfLast = page * usersPerPage;
-//   const currentUsers = filteredUsers.slice(
-//     indexOfLast - usersPerPage,
-//     indexOfLast
-//   );
-
-//   const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
-
-//   // 📊 STATS
-//   const totalUsers = users.length;
-//   const providers = users.filter((u) => u.role === "Provider").length;
-//   const seekers = users.filter((u) => u.role === "Seeker").length;
 
 //   return (
 //     <div className="space-y-6">
 
-//       {/* 📊 STATS */}
-//       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+//       {/* STATS */}
+//       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 
-//         <StatCard icon={<Users />} label="Total Users" value={totalUsers} />
-//         <StatCard icon={<Briefcase />} label="Providers" value={providers} />
-//         <StatCard icon={<User />} label="Seekers" value={seekers} />
+//         <StatCard
+//           title="Total Users"
+//           value={stats.total}
+//           icon={<Users />}
+//         />
+
+//         <StatCard
+//           title="Providers"
+//           value={stats.providers}
+//           icon={<Briefcase />}
+//         />
+
+//         <StatCard
+//           title="Seekers"
+//           value={stats.seekers}
+//           icon={<Users />}
+//         />
 
 //       </div>
 
-//       {/* 🔍 SEARCH */}
-//       <input
-//         type="text"
-//         placeholder="Search users..."
-//         className="w-full px-4 py-3 rounded-xl border border-slate-200 
-//                    dark:border-slate-700 bg-white dark:bg-slate-800 
-//                    text-slate-800 dark:text-white outline-none"
-//         value={search}
-//         onChange={(e) => setSearch(e.target.value)}
-//       />
+//       {/* CHART */}
+//       <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow">
+//         <h2 className="text-lg font-semibold mb-4 text-slate-800 dark:text-white">
+//           User Distribution
+//         </h2>
 
-//       {/* 👥 USERS */}
-//       <div className="space-y-4">
-//         {currentUsers.map((user) => (
-//           <div
-//             key={user.id}
-//             className="flex justify-between items-center p-5 rounded-2xl 
-//                        bg-white dark:bg-slate-800 shadow-sm"
-//           >
-//             <div>
-//               <h3 className="font-medium text-slate-800 dark:text-white">
-//                 {user.name}
-//               </h3>
-//               <p className="text-sm text-slate-500">{user.email}</p>
-
-//               <RoleBadge role={user.role} />
-//             </div>
-
-//             <button
-//               onClick={() => handleDelete(user.id)}
-//               className="p-2 rounded-lg hover:bg-red-100 dark:hover:bg-red-900"
-//             >
-//               <Trash2 className="text-red-500" />
-//             </button>
-//           </div>
-//         ))}
-//       </div>
-
-//       {/* 📊 PAGINATION */}
-//       <div className="flex justify-center gap-2">
-//         {[...Array(totalPages)].map((_, i) => (
-//           <button
-//             key={i}
-//             onClick={() => setPage(i + 1)}
-//             className={`px-4 py-1.5 rounded-lg text-sm ${
-//               page === i + 1
-//                 ? "bg-blue-600 text-white"
-//                 : "bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-white"
-//             }`}
-//           >
-//             {i + 1}
-//           </button>
-//         ))}
+//         <PieChart width={300} height={300}>
+//           <Pie data={chartData} dataKey="value" outerRadius={100}>
+//             <Cell fill="#22c55e" />
+//             <Cell fill="#3b82f6" />
+//           </Pie>
+//           <Tooltip />
+//         </PieChart>
 //       </div>
 
 //     </div>
@@ -132,283 +88,1267 @@
 // }
 
 // /* 🔹 STAT CARD */
-// function StatCard({ icon, label, value }) {
+// function StatCard({ title, value, icon }) {
 //   return (
-//     <div className="p-5 rounded-2xl bg-white dark:bg-slate-800 shadow-sm flex items-center gap-4">
-//       <div className="p-3 rounded-xl bg-blue-100 dark:bg-blue-900 text-blue-600">
-//         {icon}
-//       </div>
+//     <div className="p-5 bg-white dark:bg-slate-800 rounded-xl shadow flex items-center gap-4">
+//       <div className="text-blue-500">{icon}</div>
 //       <div>
-//         <p className="text-sm text-slate-500">{label}</p>
-//         <h2 className="text-xl font-semibold text-slate-800 dark:text-white">
+//         <p className="text-sm text-slate-500">{title}</p>
+//         <h3 className="text-xl font-semibold text-slate-800 dark:text-white">
 //           {value}
-//         </h2>
+//         </h3>
 //       </div>
 //     </div>
 //   );
 // }
 
-// /* 🔹 ROLE BADGE */
-// function RoleBadge({ role }) {
-//   const styles = {
-//     Provider: "bg-blue-100 text-blue-600",
-//     Seeker: "bg-green-100 text-green-600",
-//   };
-
-//   return (
-//     <span
-//       className={`inline-block mt-2 px-3 py-1 text-xs rounded-full ${styles[role]}`}
-//     >
-//       {role}
-//     </span>
-//   );
-// }
-
-
 // import { useEffect, useState } from "react";
-// import { getAllUsers, deleteUser, getAllJobs } from "../../api/adminApi";
-// import { Trash2, Users, Briefcase } from "lucide-react";
+// import { getAllUsers } from "../../api/adminApi";
+// import { Users, Briefcase } from "lucide-react";
 // import toast from "react-hot-toast";
-// import { PieChart, Pie, Cell, Tooltip } from "recharts";
+// import * as signalR from "@microsoft/signalr";
 
+// /* ✅ DevExtreme */
+// import PieChart, {
+//   Series,
+//   Tooltip as PieTooltip,
+//   Legend
+// } from "devextreme-react/pie-chart";
+
+// import DataGrid, {
+//   Column,
+//   SearchPanel,
+//   Paging,
+//   FilterRow
+// } from "devextreme-react/data-grid";
 
 // export default function AdminDashboard() {
-//   const [users, setUsers] = useState([]);
-//   const [jobs, setJobs] = useState([]);
-//   const [activeTab, setActiveTab] = useState("users");
-//   const[data, setData] = useState([]);
+//   const [stats, setStats] = useState({
+//     total: 0,
+//     seekers: 0,
+//     providers: 0,
+//   });
 
-//   // 🔥 FETCH USERS
-//   const fetchUsers = async () => {
+//   const [chartData, setChartData] = useState([]);
+//   const [users, setUsers] = useState([]);
+
+//   const loadData = async () => {
 //     try {
 //       const res = await getAllUsers();
-//       setUsers(res.data.filter((u) => u.role !== "Admin"));
-//     } catch {
-//       toast.error("Failed to load users");
-//     }
-//   };
 
-//   // 🔥 FETCH JOBS
-//   const fetchJobs = async () => {
-//     try {
-//       const res = await getAllJobs();
-//       setJobs(res.data);
+//       const usersData = res.data.filter(u => u.role !== "Admin");
+
+//       const seekers = usersData.filter(u => u.role === "Seeker").length;
+//       const providers = usersData.filter(u => u.role === "Provider").length;
+
+//       setStats({
+//         total: usersData.length,
+//         seekers,
+//         providers,
+//       });
+
+//       setChartData([
+//         { name: "Seekers", value: seekers },
+//         { name: "Providers", value: providers },
+//       ]);
+
+//       setUsers(usersData);
+
 //     } catch {
-//       toast.error("Failed to load jobs");
+//       toast.error("Failed to load dashboard data");
 //     }
 //   };
 
 //   useEffect(() => {
-//     fetchUsers();
-//     fetchJobs();
+//     loadData();
+
+//     /* 🔥 SignalR Connection */
+//     const connection = new signalR.HubConnectionBuilder()
+//       .withUrl("http://localhost:7124/notificationHub")
+//       .withAutomaticReconnect()
+//       .build();
+
+//     connection.start().then(() => {
+//       connection.on("ReceiveAdminUpdate", () => {
+//         loadData(); // 🔥 auto-refresh
+//       });
+//     });
+
+//     return () => {
+//       connection.stop();
+//     };
 //   }, []);
 
-//   // 🔥 DELETE USER
-//   const handleDelete = async (id) => {
-//     if (!confirm("Delete this user?")) return;
+//   return (
+//     <div className="space-y-6 p-4">
+
+//       {/* 🔹 STATS */}
+//       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+//         <StatCard
+//           title="Total Users"
+//           value={stats.total}
+//           icon={<Users />}
+//         />
+
+//         <StatCard
+//           title="Providers"
+//           value={stats.providers}
+//           icon={<Briefcase />}
+//         />
+
+//         <StatCard
+//           title="Seekers"
+//           value={stats.seekers}
+//           icon={<Users />}
+//         />
+
+//       </div>
+
+//       {/* 🔹 DEVEXTREME PIE CHART */}
+//       <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow">
+//         <h2 className="text-lg font-semibold mb-4 text-slate-800 dark:text-white">
+//           User Distribution
+//         </h2>
+
+//         <PieChart
+//           dataSource={chartData}
+//           palette="Bright"
+//         >
+//           <Series
+//             argumentField="name"
+//             valueField="value"
+//           />
+//           <Legend visible={true} />
+//           <PieTooltip enabled={true} />
+//         </PieChart>
+//       </div>
+
+//       {/* 🔹 USERS TABLE */}
+//       <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow">
+//         <h2 className="text-lg font-semibold mb-4 text-slate-800 dark:text-white">
+//           Users List
+//         </h2>
+
+//         <DataGrid
+//           dataSource={users}
+//           showBorders={true}
+//           columnAutoWidth={true}
+//         >
+//           <SearchPanel visible={true} />
+//           <FilterRow visible={true} />
+//           <Paging defaultPageSize={5} />
+
+//           <Column dataField="name" caption="Name" />
+//           <Column dataField="email" caption="Email" />
+//           <Column dataField="role" caption="Role" />
+
+//           {/* 🔥 ACTION BUTTON */}
+//           <Column
+//             type="buttons"
+//             buttons={[
+//               {
+//                 text: "Ban",
+//                 onClick: (e) => handleBan(e.row.data.id)
+//               }
+//             ]}
+//           />
+//         </DataGrid>
+//       </div>
+
+//     </div>
+//   );
+
+//   /* 🔥 BAN USER */
+//   async function handleBan(userId) {
+//     try {
+//       // 👉 call your backend here
+//       console.log("Ban user:", userId);
+
+//       toast.success("User banned");
+//       loadData();
+
+//     } catch {
+//       toast.error("Failed to ban user");
+//     }
+//   }
+// }
+
+// /* 🔹 STAT CARD */
+// function StatCard({ title, value, icon }) {
+//   return (
+//     <div className="p-5 bg-white dark:bg-slate-800 rounded-xl shadow flex items-center gap-4">
+//       <div className="text-blue-500">{icon}</div>
+//       <div>
+//         <p className="text-sm text-slate-500">{title}</p>
+//         <h3 className="text-xl font-semibold text-slate-800 dark:text-white">
+//           {value}
+//         </h3>
+//       </div>
+//     </div>
+//   );
+// }
+
+// import { useEffect, useState } from "react";
+// import { getAllUsers, banUser, unbanUser } from "../../api/adminApi";
+// import { Users, Briefcase } from "lucide-react";
+// import toast from "react-hot-toast";
+// import * as signalR from "@microsoft/signalr";
+
+
+// /* ✅ DevExtreme */
+// import PieChart, {
+//   Series,
+//   Tooltip as PieTooltip,
+//   Legend
+// } from "devextreme-react/pie-chart";
+
+// import DataGrid, {
+//   Column,
+//   SearchPanel,
+//   Paging,
+//   FilterRow
+// } from "devextreme-react/data-grid";
+
+// export default function AdminDashboard() {
+//   const [stats, setStats] = useState({
+//     total: 0,
+//     seekers: 0,
+//     providers: 0,
+//   });
+
+//   const [chartData, setChartData] = useState([]);
+//   const [users, setUsers] = useState([]);
+
+//   const loadData = async () => {
+//     try {
+//       const res = await getAllUsers();
+
+//       // 🔥 FILTER: remove admins + banned users
+//       const usersData = res.data.filter(
+//         u => u.role !== "Admin" 
+//       );
+
+//       const seekers = usersData.filter(u => u.role === "Seeker").length;
+//       const providers = usersData.filter(u => u.role === "Provider").length;
+
+//       setStats({
+//         total: usersData.length,
+//         seekers,
+//         providers,
+//       });
+
+//       setChartData([
+//         { name: "Seekers", value: seekers },
+//         { name: "Providers", value: providers },
+//       ]);
+
+//       setUsers(usersData);
+
+//     } catch (err) {
+//       console.error(err);
+//       toast.error("Failed to load dashboard data");
+//     }
+//   };
+
+//   useEffect(() => {
+//     loadData();
+
+//     /* 🔥 SignalR */
+//     const connection = new signalR.HubConnectionBuilder()
+//       .withUrl("http://localhost:7124/notificationHub")
+//       .withAutomaticReconnect()
+//       .build();
+
+//     connection.start().then(() => {
+//       connection.on("ReceiveAdminUpdate", () => {
+//         loadData();
+//       });
+//     });
+
+//     return () => {
+//       connection.stop();
+//     };
+//   }, []);
+
+//   return (
+//     <div className="space-y-6 p-4">
+
+//       {/* 🔹 STATS */}
+//       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+//         <StatCard title="Total Users" value={stats.total} icon={<Users />} />
+//         <StatCard title="Providers" value={stats.providers} icon={<Briefcase />} />
+//         <StatCard title="Seekers" value={stats.seekers} icon={<Users />} />
+
+//       </div>
+
+//       {/* 🔹 PIE CHART */}
+//       <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow">
+//         <h2 className="text-lg font-semibold mb-4 text-slate-800 dark:text-white">
+//           User Distribution
+//         </h2>
+
+//         <PieChart dataSource={chartData} palette="Bright">
+//           <Series argumentField="name" valueField="value" />
+//           <Legend visible={true} />
+//           <PieTooltip enabled={true} />
+//         </PieChart>
+//       </div>
+
+//       {/* 🔹 USERS TABLE */}
+//       <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow">
+//         <h2 className="text-lg font-semibold mb-4 text-slate-800 dark:text-white">
+//           Users List
+//         </h2>
+
+//         {/* <DataGrid
+//           dataSource={users}
+//           showBorders={true}
+//           columnAutoWidth={true}
+          
+//         > */}
+
+//         <DataGrid
+//           dataSource={users}
+//           showBorders={true}
+//           columnAutoWidth={true}
+//           rowClassName={(rowData) =>
+//             rowData.data?.isBanned ? "bg-red-50" : ""
+//           }
+//         >
+//           <SearchPanel visible={true} />
+//           <FilterRow visible={true} />
+//           <Paging defaultPageSize={5} />
+
+//           <Column dataField="name" caption="Name" />
+//           <Column dataField="email" caption="Email" />
+//           <Column dataField="role" caption="Role" />
+
+//           {/* 🔥 STATUS COLUMN */}
+//           <Column
+//   dataField="isBanned"
+//   caption="Status"
+//   cellRender={(data) => (
+//     <span className={data.value ? "text-red-500 font-semibold" : "text-green-500 font-semibold"}>
+//       {data.value ? "Banned" : "Active"}
+//     </span>
+//   )}
+// />
+//           {/* <Column
+//             dataField="isBanned"
+//             caption="Status"
+//             cellRender={(data) => (
+//               <span className={data.value ? "text-red-500" : "text-green-500"}>
+//                 {data.value ? "Banned" : "Active"}
+//               </span>
+//             )}
+//           /> */}
+
+//           {/* 🔥 ACTION BUTTON */}
+//           <Column
+//             caption="Action"
+//             cellRender={(data) => {
+//               const isBanned = data.data.isBanned;
+
+//               return (
+//                 <button
+//                   onClick={() => handleToggleBan(data.data.id, isBanned)}
+//                   className={`px-3 py-1 rounded text-white ${
+//                     isBanned ? "bg-green-500" : "bg-red-500"
+//                   }`}
+//                 >
+//                   {isBanned ? "Unban" : "Ban"}
+//                 </button>
+//               );
+//             }}
+//           />
+//         </DataGrid>
+//       </div>
+
+//     </div>
+//   );
+
+//   // /* 🔥 BAN USER */
+//   //  function handleBan(userId) {
+//   //   try {
+//   //     await banUser(userId);
+
+//   //     toast.success("User banned successfully");
+
+//   //     loadData(); // refresh UI
+
+//   //   } catch (err) {
+//   //     console.error(err);
+//   //     toast.error("Failed to ban user");
+//   //   }
+//   // }
+//   async function handleToggleBan(userId, isBanned) {
+//   try {
+//     if (isBanned) {
+//       await unbanUser(userId);
+//       toast.success("User unbanned");
+//     } else {
+//       await banUser(userId);
+//       toast.success("User banned");
+//     }
+
+//     loadData();
+
+//   } catch (err) {
+//     console.error(err);
+//     toast.error("Action failed");
+//   }
+// }
+// }
+
+// /* 🔹 STAT CARD */
+// function StatCard({ title, value, icon }) {
+//   return (
+//     <div className="p-5 bg-white dark:bg-slate-800 rounded-xl shadow flex items-center gap-4">
+//       <div className="text-blue-500">{icon}</div>
+//       <div>
+//         <p className="text-sm text-slate-500">{title}</p>
+//         <h3 className="text-xl font-semibold text-slate-800 dark:text-white">
+//           {value}
+//         </h3>
+//       </div>
+//     </div>
+//   );
+// }
+
+// import { useEffect, useState } from "react";
+// import { getAllUsers, banUser, unbanUser } from "../../api/adminApi";
+// import { Users, Briefcase } from "lucide-react";
+// import toast from "react-hot-toast";
+// import * as signalR from "@microsoft/signalr";
+
+// /* ✅ DevExtreme */
+// import PieChart, {
+//   Series,
+//   Tooltip as PieTooltip,
+//   Legend
+// } from "devextreme-react/pie-chart";
+
+// import DataGrid, {
+//   Column,
+//   SearchPanel,
+//   Paging,
+//   FilterRow
+// } from "devextreme-react/data-grid";
+
+// export default function AdminDashboard() {
+//   const [stats, setStats] = useState({
+//     total: 0,
+//     seekers: 0,
+//     providers: 0,
+//   });
+
+//   const [chartData, setChartData] = useState([]);
+//   const [users, setUsers] = useState([]);
+
+//   const loadData = async () => {
+//     try {
+//       const res = await getAllUsers();
+
+//       // ✅ Show ALL users except admin (including banned)
+//       const usersData = res.data.filter(
+//         (u) => u.role !== "Admin"
+//       );
+
+//       const seekers = usersData.filter((u) => u.role === "Seeker").length;
+//       const providers = usersData.filter((u) => u.role === "Provider").length;
+
+//       setStats({
+//         total: usersData.length,
+//         seekers,
+//         providers,
+//       });
+
+//       setChartData([
+//         { name: "Seekers", value: seekers },
+//         { name: "Providers", value: providers },
+//       ]);
+
+//       setUsers(usersData);
+
+//     } catch (err) {
+//       console.error(err);
+//       toast.error("Failed to load dashboard data");
+//     }
+//   };
+
+//   // useEffect(() => {
+//   //   loadData();
+
+//   //   const connection = new signalR.HubConnectionBuilder()
+//   //     .withUrl("http://localhost:7240/notificationHub")
+//   //     .withAutomaticReconnect()
+//   //     .build();
+
+//   //   connection.start().then(() => {
+//   //     console.log("SignalR connected")
+//   //     connection.on("ReceiveAdminUpdate", () => {
+//   //       loadData();
+//   //     });
+//   //   });
+
+//   //   return () => {
+//   //     connection.stop();
+//   //   };
+//   // }, []);
+
+// //   useEffect(() => {
+// //   loadData();
+
+// //   const connection = new signalR.HubConnectionBuilder()
+// //     .withUrl("https://localhost:7240/hubs/notification")
+// //     .withAutomaticReconnect()
+// //     .build();
+
+// //   connection.start()
+// //     .then(() => {
+// //       console.log("✅ SignalR connected");
+
+// //       connection.on("ReceiveAdminUpdate", () => {
+// //         console.log("🔄 Admin update received");
+// //         loadData();
+// //       });
+// //     })
+// //     .catch((err) => {
+// //       console.error("❌ SignalR connection failed:", err);
+// //     });
+
+// //   return () => {
+// //     connection.stop();
+// //   };
+// // }, []);
+// useEffect(() => {
+//   let connection = null;
+//   let isMounted = true;
+
+//   const startSignalR = async () => {
+//     if (!isMounted) return;
+
+//     connection = new signalR.HubConnectionBuilder()
+//       .withUrl("https://localhost:7240/hubs/notification")
+//       .withAutomaticReconnect()
+//       .build();
 
 //     try {
-//       await deleteUser(id);
-//       setUsers(users.filter((u) => u.id !== id));
-//       toast.success("User deleted");
-//     } catch {
-//       toast.error("Delete failed");
+//       await connection.start();
+//       console.log("✅ SignalR connected");
+
+//       connection.on("ReceiveAdminUpdate", () => {
+//         console.log("🔄 Admin update received");
+//         loadData();
+//       });
+
+//     } catch (err) {
+//       console.error("❌ SignalR connection failed:", err);
+//     }
+//   };
+
+//   loadData();
+//   startSignalR();
+
+//   return () => {
+//     isMounted = false;
+//     if (connection) {
+//       connection.stop();
+//       console.log("🛑 SignalR stopped");
+//     }
+//   };
+// }, []);
+
+
+//   return (
+//     <div className="space-y-6 p-4">
+
+//       {/* 🔹 STATS */}
+//       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+//         <StatCard title="Total Users" value={stats.total} icon={<Users />} />
+//         <StatCard title="Providers" value={stats.providers} icon={<Briefcase />} />
+//         <StatCard title="Seekers" value={stats.seekers} icon={<Users />} />
+//       </div>
+
+//       {/* 🔹 PIE CHART */}
+//       <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow">
+//         <h2 className="text-lg font-semibold mb-4 text-slate-800 dark:text-white">
+//           User Distribution
+//         </h2>
+
+//         <PieChart dataSource={chartData} palette="Bright">
+//           <Series argumentField="name" valueField="value" />
+//           <Legend visible={true} />
+//           <PieTooltip enabled={true} />
+//         </PieChart>
+//       </div>
+
+//       {/* 🔹 USERS TABLE */}
+//       <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow">
+//         <h2 className="text-lg font-semibold mb-4 text-slate-800 dark:text-white">
+//           Users List
+//         </h2>
+
+//         <DataGrid
+//           key={users.length}
+//           dataSource={users}
+//           showBorders={true}
+//           columnAutoWidth={true}
+//           rowClassName={(rowData) =>
+//             rowData.data?.isBanned ? "bg-red-50" : ""
+//           }
+//         >
+//           <SearchPanel visible={true} />
+//           <FilterRow visible={true} />
+//           <Paging defaultPageSize={5} />
+
+//           <Column dataField="name" caption="Name" />
+//           <Column dataField="email" caption="Email" />
+//           <Column dataField="role" caption="Role" />
+
+//           {/* 🔥 STATUS COLUMN */}
+//           <Column
+//             dataField="isBanned"
+//             caption="Status"
+//             allowFiltering={true}
+//             cellRender={(data) => (
+//               <span className={data.value ? "text-red-500 font-semibold" : "text-green-500 font-semibold"}>
+//                 {data.value ? "Banned" : "Active"}
+//               </span>
+//             )}
+//           />
+
+//           {/* 🔥 ACTION BUTTON */}
+//           <Column
+//             caption="Action"
+//             cellRender={(data) => {
+//               const isBanned = data.data.isBanned;
+
+//               return (
+//                 <button
+//                   onClick={() => handleToggleBan(data.data.id, isBanned)}
+//                   className={`px-3 py-1 rounded text-white font-semibold ${
+//                     isBanned
+//                       ? "bg-green-500 hover:bg-green-600"
+//                       : "bg-red-500 hover:bg-red-600"
+//                   }`}
+//                 >
+//                   {isBanned ? "Unban" : "Ban"}
+//                 </button>
+//               );
+//             }}
+//           />
+//         </DataGrid>
+//       </div>
+//     </div>
+//   );
+
+//   // 🔥 TOGGLE BAN / UNBAN
+//   async function handleToggleBan(userId, isBanned) {
+//     try {
+//       if (isBanned) {
+//         await unbanUser(userId);
+//         toast.success("User unbanned");
+//       } else {
+//         await banUser(userId);
+//         toast.success("User banned");
+//       }
+
+//      await loadData();
+
+//     } catch (err) {
+//       console.error(err);
+//       toast.error("Action failed");
+//     }
+//   }
+// }
+
+// /* 🔹 STAT CARD */
+// function StatCard({ title, value, icon }) {
+//   return (
+//     <div className="p-5 bg-white dark:bg-slate-800 rounded-xl shadow flex items-center gap-4">
+//       <div className="text-blue-500">{icon}</div>
+//       <div>
+//         <p className="text-sm text-slate-500">{title}</p>
+//         <h3 className="text-xl font-semibold text-slate-800 dark:text-white">
+//           {value}
+//         </h3>
+//       </div>
+//     </div>
+//   );
+// }
+// import { useEffect, useState } from "react";
+// import {
+//   getAllUsers,
+//   banUser,
+//   unbanUser,
+//   getAnalytics
+// } from "../../api/adminApi";
+
+// import { Users, Briefcase, UserX } from "lucide-react";
+// import toast from "react-hot-toast";
+// // import * as signalR from "@microsoft/signalr";
+// import connection from "../../services/signalr";
+// /* ✅ DevExtreme */
+// import PieChart, {
+//   Series,
+//   Tooltip as PieTooltip,
+//   Legend
+// } from "devextreme-react/pie-chart";
+
+// import Chart, {
+//   ArgumentAxis,
+//   ValueAxis,
+//   Series as LineSeries
+// } from "devextreme-react/chart";
+
+// import DataGrid, {
+//   Column,
+//   SearchPanel,
+//   Paging,
+//   FilterRow
+// } from "devextreme-react/data-grid";
+
+// export default function AdminDashboard() {
+//   const [users, setUsers] = useState([]);
+//   const [analytics, setAnalytics] = useState(null);
+
+//   // 🔹 LOAD USERS
+//   const loadUsers = async () => {
+//     try {
+//       const res = await getAllUsers();
+
+//       const usersData = res.data.data.filter((u)=>u.role != "Admin");
+//       setUsers(usersData);
+
+//     } catch (err) {
+//       console.error(err);
+//       toast.error("Failed to load users");
+//     }
+//   };
+
+//   // 🔹 LOAD ANALYTICS
+//   const loadAnalytics = async () => {
+//     try {
+//       const res = await getAnalytics();
+//       setAnalytics(res.data);
+//     } catch (err) {
+//       console.error(err);
+//       toast.error("Failed to load analytics");
+//     }
+//   };
+
+//   // // 🔹 SIGNALR + INITIAL LOAD
+//   // useEffect(() => {
+//   //   let connection = null;
+//   //   let isMounted = true;
+
+//   //   const startSignalR = async () => {
+//   //     if (!isMounted) return;
+
+//   //     connection = new signalR.HubConnectionBuilder()
+//   //       .withUrl("https://localhost:7240/hubs/notification")
+//   //       .withAutomaticReconnect()
+//   //       .build();
+
+//   //     try {
+//   //       await connection.start();
+//   //       console.log("✅ SignalR connected");
+
+//   //       connection.on("ReceiveAdminUpdate", () => {
+//   //         console.log("🔄 Admin update received");
+//   //         loadUsers();
+//   //         loadAnalytics(); // 🔥 IMPORTANT
+//   //       });
+
+//   //     } catch (err) {
+//   //       console.error("❌ SignalR error:", err);
+//   //     }
+//   //   };
+
+//   //   loadUsers();
+//   //   loadAnalytics();
+//   //   startSignalR();
+
+//   //   return () => {
+//   //     isMounted = false;
+//   //     if (connection) connection.stop();
+//   //   };
+//   // }, []);
+  
+
+// //   useEffect(() => {
+// //   let connection;
+
+// //   const initSignalR = async () => {
+// //     connection = new signalR.HubConnectionBuilder()
+// //       .withUrl("https://localhost:7240/hubs/notification")
+// //       .withAutomaticReconnect()
+// //       .build();
+
+// //     // 🔥 Register listener BEFORE start
+// //     connection.on("ReceiveAdminUpdate", () => {
+// //       console.log("🔄 Admin update received");
+// //       loadUsers();
+// //       loadAnalytics();
+// //     });
+
+// //     try {
+// //       if (connection.state === "Disconnected") {
+// //         await connection.start();
+// //         console.log("✅ SignalR connected");
+// //       }
+// //     } catch (err) {
+// //       console.error("❌ SignalR start error:", err);
+// //     }
+// //   };
+
+// //   loadUsers();
+// //   loadAnalytics();
+// //   initSignalR();
+
+// //   return () => {
+// //     if (connection) {
+// //       connection.stop();
+// //       console.log("🛑 SignalR stopped");
+// //     }
+// //   };
+// // }, []);
+
+//   useEffect(() => {
+//   loadUsers();
+//   loadAnalytics();
+
+//   // 🔥 attach listener to existing global connection
+//   connection.off("ReceiveAdminUpdate");
+
+//   connection.on("ReceiveAdminUpdate", () => {
+//     console.log("🔄 Admin update received");
+//     loadUsers();
+//     loadAnalytics();
+//   });
+
+//   return () => {
+//     connection.off("ReceiveAdminUpdate");
+//   };
+// }, []);
+
+//   // 🔥 BAN / UNBAN
+//   const handleToggleBan = async (userId, isBanned) => {
+//     try {
+//       if (isBanned) {
+//         await unbanUser(userId);
+//         toast.success("User unbanned");
+//       } else {
+//         await banUser(userId);
+//         toast.success("User banned");
+//       }
+
+//       loadUsers();
+//       loadAnalytics();
+
+//     } catch (err) {
+//       console.error(err);
+//       toast.error("Action failed");
 //     }
 //   };
 
 //   return (
-//     <div className="p-6 space-y-6">
+//     <div className="space-y-6 p-4">
 
-//       {/* HEADER */}
-//       <h1 className="text-2xl font-bold text-slate-800 dark:text-white">
-//         Admin Dashboard
-//       </h1>
+//       {/* 🔹 STATS CARDS */}
+//       {analytics && (
+//         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
 
-//       {/* TABS */}
-//       <div className="flex gap-4">
-//         <button
-//           onClick={() => setActiveTab("users")}
-//           className={`px-4 py-2 rounded-lg ${
-//             activeTab === "users"
-//               ? "bg-blue-600 text-white"
-//               : "bg-slate-200 dark:bg-slate-700"
-//           }`}
+//           <StatCard
+//             title="Total Users"
+//             value={analytics.totalUsers}
+//             icon={<Users />}
+//           />
+
+//           <StatCard
+//             title="Active Users"
+//             value={analytics.activeUsers}
+//             icon={<Users />}
+//           />
+
+//           <StatCard
+//             title="Banned Users"
+//             value={analytics.bannedUsers}
+//             icon={<UserX />}
+//           />
+
+//           <StatCard
+//             title="Total Jobs"
+//             value={analytics.totalJobs}
+//             icon={<Briefcase />}
+//           />
+
+//         </div>
+//       )}
+
+//       {/* 🔹 PIE CHART */}
+//       {analytics && (
+//         <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow">
+//           <h2 className="text-lg font-semibold mb-4">
+//             User Distribution
+//           </h2>
+
+//           <PieChart
+//             dataSource={[
+//               { name: "Seekers", value: analytics.seekers },
+//               { name: "Providers", value: analytics.providers }
+//             ]}
+//             palette="Bright"
+//           >
+//             <Series argumentField="name" valueField="value" />
+//             <Legend visible={true} />
+//             <PieTooltip enabled={true} />
+//           </PieChart>
+//         </div>
+//       )}
+
+//       {/* 🔹 JOB TREND */}
+//       {analytics && (
+//         <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow">
+//           <h2 className="text-lg font-semibold mb-4">
+//             Jobs Over Time
+//           </h2>
+
+//           <Chart dataSource={analytics.jobsPerDay}>
+//             <ArgumentAxis argumentType="datetime" />
+//             <ValueAxis />
+
+//             <LineSeries
+//               valueField="count"
+//               argumentField="date"
+//               type="line"
+//             />
+//           </Chart>
+//         </div>
+//       )}
+
+//       {/* 🔹 USERS TABLE */}
+//       <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow">
+//         <h2 className="text-lg font-semibold mb-4">
+//           Users List
+//         </h2>
+
+//         <DataGrid
+//           dataSource={users}
+//           showBorders={true}
+//           columnAutoWidth={true}
 //         >
-//           Users
-//         </button>
+//           <SearchPanel visible={true} />
+//           <FilterRow visible={true} />
+//           <Paging defaultPageSize={5} />
 
-//         <button
-//           onClick={() => setActiveTab("jobs")}
-//           className={`px-4 py-2 rounded-lg ${
-//             activeTab === "jobs"
-//               ? "bg-blue-600 text-white"
-//               : "bg-slate-200 dark:bg-slate-700"
-//           }`}
-//         >
-//           Jobs
-//         </button>
-//       </div>
+//           <Column dataField="name" caption="Name" />
+//           <Column dataField="email" caption="Email" />
+//           <Column dataField="role" caption="Role" />
 
-//       {/* USERS TAB */}
-//       {activeTab === "users" && (
-//         <div className="space-y-4">
-//           {users.map((user) => (
-//             <div
-//               key={user.id}
-//               className="p-5 rounded-2xl bg-white dark:bg-slate-800 shadow flex justify-between"
-//             >
-//               <div>
-//                 <h3 className="font-semibold">{user.name}</h3>
-//                 <p className="text-sm text-slate-500">{user.email}</p>
-//                 <span className="text-xs">{user.role}</span>
-//               </div>
-
-//               <button
-//                 onClick={() => handleDelete(user.id)}
-//                 className="text-red-500 hover:text-red-700"
+//           <Column
+//             dataField="isBanned"
+//             caption="Status"
+//             cellRender={(data) => (
+//               <span
+//                 className={
+//                   data.value
+//                     ? "text-red-500 font-semibold"
+//                     : "text-green-500 font-semibold"
+//                 }
 //               >
-//                 <Trash2 />
-//               </button>
-//             </div>
-//           ))}
-//         </div>
-//       )}
+//                 {data.value ? "Banned" : "Active"}
+//               </span>
+//             )}
+//           />
 
-//       {/* JOBS TAB */}
-//       {activeTab === "jobs" && (
-//         <div className="space-y-4">
-//           {jobs.map((job) => (
-//             <div
-//               key={job.id}
-//               className="p-5 rounded-2xl bg-white dark:bg-slate-800 shadow"
-//             >
-//               <div className="flex justify-between">
-//                 <div>
-//                   <h3 className="font-semibold">{job.title}</h3>
-//                   <p className="text-sm text-slate-500">
-//                     {job.description}
-//                   </p>
+//           <Column
+//             caption="Action"
+//             cellRender={(data) => {
+//               const isBanned = data.data.isBanned;
 
-//                   <p className="text-xs text-slate-400 mt-2">
-//                     {job.providerName} ({job.providerEmail})
-//                   </p>
-//                 </div>
+//               return (
+//                 <button
+//                   onClick={() =>
+//                     handleToggleBan(data.data.id, isBanned)
+//                   }
+//                   className={`px-3 py-1 rounded text-white ${
+//                     isBanned
+//                       ? "bg-green-500"
+//                       : "bg-red-500"
+//                   }`}
+//                 >
+//                   {isBanned ? "Unban" : "Ban"}
+//                 </button>
+//               );
+//             }}
+//           />
+//         </DataGrid>
+//       </div>
+//     </div>
+//   );
+// }
 
-//                 <Briefcase className="text-blue-500" />
-//               </div>
-
-//               <div className="mt-3 flex justify-between text-sm text-slate-500">
-//                 <span>₹ {job.budget}</span>
-//                 <span>{job.location}</span>
-//               </div>
-//             </div>
-//           ))}
-//         </div>
-//       )}
-
+// /* 🔹 STAT CARD */
+// function StatCard({ title, value, icon }) {
+//   return (
+//     <div className="p-5 bg-white dark:bg-slate-800 rounded-xl shadow flex items-center gap-4">
+//       <div className="text-blue-500">{icon}</div>
+//       <div>
+//         <p className="text-sm text-slate-500">{title}</p>
+//         <h3 className="text-xl font-semibold">
+//           {value}
+//         </h3>
+//       </div>
 //     </div>
 //   );
 // }
 
 import { useEffect, useState } from "react";
-import { getAllUsers } from "../../api/adminApi";
-import { Users, Briefcase } from "lucide-react";
-import { PieChart, Pie, Cell, Tooltip } from "recharts";
+import {
+  getAllUsers,
+  banUser,
+  unbanUser,
+  getAnalytics
+} from "../../api/adminApi";
+
+import { Users, Briefcase, UserX } from "lucide-react";
 import toast from "react-hot-toast";
+import connection from "../../services/signalr";
+
+/* DevExtreme */
+import PieChart, {
+  Series,
+  Tooltip as PieTooltip,
+  Legend
+} from "devextreme-react/pie-chart";
+
+import Chart, {
+  ArgumentAxis,
+  ValueAxis,
+  Series as LineSeries
+} from "devextreme-react/chart";
+
+import DataGrid, {
+  Column,
+  SearchPanel,
+  Paging,
+  FilterRow
+} from "devextreme-react/data-grid";
 
 export default function AdminDashboard() {
-  const [stats, setStats] = useState({
-    total: 0,
-    seekers: 0,
-    providers: 0,
-  });
+  const [users, setUsers] = useState([]);
+  const [analytics, setAnalytics] = useState(null);
 
-  const [chartData, setChartData] = useState([]);
+  // 🔥 loading guards (prevents duplicate calls)
+  let isLoadingUsers = false;
+  let isLoadingAnalytics = false;
 
+  // 🔹 LOAD USERS
+  const loadUsers = async () => {
+    if (isLoadingUsers) return;
+    isLoadingUsers = true;
+
+    try {
+      const res = await getAllUsers();
+
+      console.log("USERS RESPONSE:", res.data);
+
+      const usersArray = Array.isArray(res.data)
+        ? res.data
+        : res.data?.data;
+
+      if (!usersArray) throw new Error("Invalid users response");
+
+      const filtered = usersArray.filter(
+        (u) => u.role !== "Admin"
+      );
+
+      setUsers(filtered);
+
+    } catch (err) {
+      console.error("USER ERROR:", err);
+      toast.error("Failed to load users");
+    } finally {
+      isLoadingUsers = false;
+    }
+  };
+
+  // 🔹 LOAD ANALYTICS
+  const loadAnalytics = async () => {
+    if (isLoadingAnalytics) return;
+    isLoadingAnalytics = true;
+
+    try {
+      const res = await getAnalytics();
+
+      console.log("ANALYTICS RESPONSE:", res.data);
+
+      const analyticsData =
+        res.data?.data || res.data;
+
+      if (!analyticsData)
+        throw new Error("Invalid analytics response");
+
+      setAnalytics(analyticsData);
+
+    } catch (err) {
+      console.error("ANALYTICS ERROR:", err);
+      toast.error("Failed to load analytics");
+    } finally {
+      isLoadingAnalytics = false;
+    }
+  };
+
+  // 🔹 INIT + SIGNALR
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        const res = await getAllUsers();
+    loadUsers();
+    loadAnalytics();
 
-        const users = res.data.filter(u => u.role !== "Admin");
+    connection.off("ReceiveAdminUpdate");
 
-        const seekers = users.filter(u => u.role === "Seeker").length;
-        const providers = users.filter(u => u.role === "Provider").length;
+    connection.on("ReceiveAdminUpdate", () => {
+      console.log("🔄 Admin update received");
+      loadUsers();
+      loadAnalytics();
+    });
 
-        setStats({
-          total: users.length,
-          seekers,
-          providers,
-        });
-
-        setChartData([
-          { name: "Seekers", value: seekers },
-          { name: "Providers", value: providers },
-        ]);
-
-      } catch {
-        toast.error("Failed to load dashboard data");
-      }
+    return () => {
+      connection.off("ReceiveAdminUpdate");
     };
-
-    loadData();
   }, []);
 
+  // 🔥 BAN / UNBAN
+  const handleToggleBan = async (userId, isBanned) => {
+    try {
+      if (isBanned) {
+        await unbanUser(userId);
+        toast.success("User unbanned");
+      } else {
+        await banUser(userId);
+        toast.success("User banned");
+      }
+
+      loadUsers();
+      loadAnalytics();
+
+    } catch (err) {
+      console.error(err);
+      toast.error("Action failed");
+    }
+  };
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-4">
 
-      {/* STATS */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {/* 🔹 STATS */}
+      {analytics && (
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
 
-        <StatCard
-          title="Total Users"
-          value={stats.total}
-          icon={<Users />}
-        />
+          <StatCard title="Total Users" value={analytics.totalUsers} icon={<Users />} />
+          <StatCard title="Active Users" value={analytics.activeUsers} icon={<Users />} />
+          <StatCard title="Banned Users" value={analytics.bannedUsers} icon={<UserX />} />
+          <StatCard title="Total Jobs" value={analytics.totalJobs} icon={<Briefcase />} />
 
-        <StatCard
-          title="Providers"
-          value={stats.providers}
-          icon={<Briefcase />}
-        />
+        </div>
+      )}
 
-        <StatCard
-          title="Seekers"
-          value={stats.seekers}
-          icon={<Users />}
-        />
+      {/* 🔹 PIE */}
+      {analytics && (
+        <div className="bg-white p-6 rounded-xl shadow">
+          <h2 className="text-lg font-semibold mb-4">User Distribution</h2>
 
+          <PieChart
+            dataSource={[
+              { name: "Seekers", value: analytics.seekers },
+              { name: "Providers", value: analytics.providers }
+            ]}
+          >
+            <Series argumentField="name" valueField="value" />
+            <Legend visible />
+            <PieTooltip enabled />
+          </PieChart>
+        </div>
+      )}
+
+      {/* 🔹 LINE */}
+      {analytics && (
+        <div className="bg-white p-6 rounded-xl shadow">
+          <h2 className="text-lg font-semibold mb-4">Jobs Over Time</h2>
+
+          <Chart dataSource={analytics.jobsPerDay}>
+            <ArgumentAxis argumentType="datetime" />
+            <ValueAxis />
+
+            <LineSeries
+              valueField="count"
+              argumentField="date"
+              type="line"
+            />
+          </Chart>
+        </div>
+      )}
+
+      {/* 🔹 USERS TABLE */}
+      <div className="bg-white p-6 rounded-xl shadow">
+        <h2 className="text-lg font-semibold mb-4">Users List</h2>
+
+        <DataGrid dataSource={users} showBorders columnAutoWidth>
+
+          <SearchPanel visible />
+          <FilterRow visible />
+          <Paging defaultPageSize={5} />
+
+          <Column dataField="name" />
+          <Column dataField="email" />
+          <Column dataField="role" />
+
+          <Column
+            dataField="isBanned"
+            caption="Status"
+            cellRender={(data) => (
+              <span className={data.value ? "text-red-500" : "text-green-500"}>
+                {data.value ? "Banned" : "Active"}
+              </span>
+            )}
+          />
+
+          <Column
+            caption="Action"
+            cellRender={(data) => {
+              const isBanned = data.data.isBanned;
+
+              return (
+                <button
+                  onClick={() =>
+                    handleToggleBan(data.data.id, isBanned)
+                  }
+                  className={`px-3 py-1 rounded text-white ${
+                    isBanned ? "bg-green-500" : "bg-red-500"
+                  }`}
+                >
+                  {isBanned ? "Unban" : "Ban"}
+                </button>
+              );
+            }}
+          />
+
+        </DataGrid>
       </div>
-
-      {/* CHART */}
-      <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow">
-        <h2 className="text-lg font-semibold mb-4 text-slate-800 dark:text-white">
-          User Distribution
-        </h2>
-
-        <PieChart width={300} height={300}>
-          <Pie data={chartData} dataKey="value" outerRadius={100}>
-            <Cell fill="#22c55e" />
-            <Cell fill="#3b82f6" />
-          </Pie>
-          <Tooltip />
-        </PieChart>
-      </div>
-
     </div>
   );
 }
 
-/* 🔹 STAT CARD */
 function StatCard({ title, value, icon }) {
   return (
-    <div className="p-5 bg-white dark:bg-slate-800 rounded-xl shadow flex items-center gap-4">
+    <div className="p-5 bg-white rounded-xl shadow flex items-center gap-4">
       <div className="text-blue-500">{icon}</div>
       <div>
-        <p className="text-sm text-slate-500">{title}</p>
-        <h3 className="text-xl font-semibold text-slate-800 dark:text-white">
-          {value}
-        </h3>
+        <p className="text-sm text-gray-500">{title}</p>
+        <h3 className="text-xl font-semibold">{value}</h3>
       </div>
     </div>
   );

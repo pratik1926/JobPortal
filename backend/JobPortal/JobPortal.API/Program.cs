@@ -11,12 +11,12 @@ using JobPortal.Infrastructure.Services;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Serilog;
-using JobPortal.Infrastructure.Services;
 using JobPortal.Application.Validators;
 using JobPortal.API.Hubs;
 using JobPortal.API.Services;
 using JobPortal.API.Infrastructure;
 using Microsoft.AspNetCore.SignalR;
+using JobPortal.API.Middleware;
 
 namespace JobPortal.API
 {
@@ -161,6 +161,8 @@ namespace JobPortal.API
 
             // 🔥 USER MAPPING (VERY IMPORTANT)
             builder.Services.AddSingleton<IUserIdProvider, SignalRUserIdProvider>();
+
+            builder.Services.AddScoped<IAdminService, AdminService>();
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -181,6 +183,8 @@ namespace JobPortal.API
             app.UseAuthentication();
 
             app.UseAuthorization();
+
+            app.UseMiddleware<UserStatusMiddleware>();
 
             app.MapHub<NotificationHub>("/hubs/notification");
 
