@@ -1,4 +1,5 @@
-﻿using JobPortal.Domain.Entities;
+﻿using JobPortal.Application.DTOs;
+using JobPortal.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,5 +11,10 @@ namespace JobPortal.Application.Interfaces
     public interface IUserService
     {
         Task<User?> GetUserByIdAsync(int userId);
+
+        Task<(List<UserAdminDto> users, int total)> GetPagedUsersAsync(int page, int pageSize);
+        Task<bool> BanUserAsync(int id);
+        Task<bool> UnbanUserAsync(int id);
+        Task<bool> DeleteUserAsync(int id);
     }
 }

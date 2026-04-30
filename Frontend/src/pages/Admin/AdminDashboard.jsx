@@ -1148,34 +1148,52 @@ export default function AdminDashboard() {
   let isLoadingAnalytics = false;
 
   // 🔹 LOAD USERS
+  // const loadUsers = async () => {
+  //   if (isLoadingUsers) return;
+  //   isLoadingUsers = true;
+
+  //   try {
+  //     const res = await getAllUsers();
+
+  //     console.log("USERS RESPONSE:", res.data);
+
+  //     const usersArray = Array.isArray(res.data)
+  //       ? res.data
+  //       : res.data?.data;
+
+  //     if (!usersArray) throw new Error("Invalid users response");
+
+  //     const filtered = usersArray.filter(
+  //       (u) => u.role !== "Admin"
+  //     );
+
+  //     setUsers(filtered);
+
+  //   } catch (err) {
+  //     console.error("USER ERROR:", err);
+  //     toast.error("Failed to load users");
+  //   } finally {
+  //     isLoadingUsers = false;
+  //   }
+  // };
+
   const loadUsers = async () => {
-    if (isLoadingUsers) return;
-    isLoadingUsers = true;
+  try {
+    const res = await getAllUsers(1, 5);
 
-    try {
-      const res = await getAllUsers();
+    const usersArray = res.data?.data;
 
-      console.log("USERS RESPONSE:", res.data);
+    const filtered = usersArray.filter(
+      (u) => u.role !== "Admin"
+    );
 
-      const usersArray = Array.isArray(res.data)
-        ? res.data
-        : res.data?.data;
+    setUsers(filtered);
 
-      if (!usersArray) throw new Error("Invalid users response");
-
-      const filtered = usersArray.filter(
-        (u) => u.role !== "Admin"
-      );
-
-      setUsers(filtered);
-
-    } catch (err) {
-      console.error("USER ERROR:", err);
-      toast.error("Failed to load users");
-    } finally {
-      isLoadingUsers = false;
-    }
-  };
+  } catch (err) {
+    console.error(err);
+    toast.error("Failed to load users");
+  }
+};
 
   // 🔹 LOAD ANALYTICS
   const loadAnalytics = async () => {

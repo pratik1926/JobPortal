@@ -1,10 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using JobPortal.Application.Interfaces;
-using JobPortal.Infrastructure.Persistence;
-using Microsoft.EntityFrameworkCore;
+//using JobPortal.Infrastructure.Persistence;
+//using Microsoft.EntityFrameworkCore;
 using JobPortal.API.Hubs;
 using Microsoft.AspNetCore.SignalR;
+using JobPortal.Application.Services;
 
 namespace JobPortal.API.Controllers
 {
@@ -13,18 +14,18 @@ namespace JobPortal.API.Controllers
     [Authorize(Roles = "Admin")] // 🔥 CRITICAL
     public class AdminController : ControllerBase
     {
-        private readonly IUserRepository _userRepository;
+        private readonly IUserService _userService;
         private readonly IJobService _jobService;
         private readonly IAdminService _adminService;
         private readonly IHubContext<NotificationHub> _hubContext;
-        public AdminController(IUserRepository userRepository,
+        public AdminController(IUserService userService,
             IJobService jobService,
             IAdminService adminService,
             IHubContext<NotificationHub> hubContext)
 
         {
 
-            _userRepository = userRepository;
+            _userService = userService;
             _jobService = jobService;
             _adminService = adminService;
             _hubContext = hubContext;
@@ -37,25 +38,42 @@ namespace JobPortal.API.Controllers
         //    var users = await _userRepository.GetAllUsersAsync();
         //    return Ok(users);
         //}
+        //[HttpGet("users")]
+        //public async Task<IActionResult> GetAllUsers(int page = 1, int pageSize = 10)
+        //{
+        //    pageSize = Math.Min(pageSize, 50);
+
+        //    var (users, total) = await _userRepository.GetPagedUsersAsync(page, pageSize);
+
+        //    var result = users.Select(u => new
+        //    {
+        //        u.Id,
+        //        u.Name,
+        //        u.Email,
+        //        u.Role,
+        //        u.IsBanned
+        //    });
+
+        //    return Ok(new
+        //    {
+        //        data = result,
+        //        total,
+        //        page,
+        //        pageSize
+        //    });
+        //}
+
+        // ✅ GET PAGINATED USERS
         [HttpGet("users")]
         public async Task<IActionResult> GetAllUsers(int page = 1, int pageSize = 10)
         {
             pageSize = Math.Min(pageSize, 50);
 
-            var (users, total) = await _userRepository.GetPagedUsersAsync(page, pageSize);
-
-            var result = users.Select(u => new
-            {
-                u.Id,
-                u.Name,
-                u.Email,
-                u.Role,
-                u.IsBanned
-            });
+            var (users, total) = await _userService.GetPagedUsersAsync(page, pageSize);
 
             return Ok(new
             {
-                data = result,
+                data = users,
                 total,
                 page,
                 pageSize
@@ -75,30 +93,57 @@ namespace JobPortal.API.Controllers
         //}
 
         // 🔥 NEW: BAN USER
+        //[HttpPut("ban/{id}")]
+        //public async Task<IActionResult> BanUser(int id)
+        //{
+        //    var result = await _userRepository.BanUserAsync(id);
+
+        //    if (!result)
+        //        return NotFound(new { message = "User not found" });
+
+        //    // 🔥 notify dashboard
+        //    await _hubContext.Clients.All.SendAsync("ReceiveAdminUpdate");
+
+        //    return Ok(new { message = "User banned successfully" });
+        //}
+
+        // 🔥 BAN USER
         [HttpPut("ban/{id}")]
         public async Task<IActionResult> BanUser(int id)
         {
-            var result = await _userRepository.BanUserAsync(id);
+            var result = await _userService.BanUserAsync(id);
 
             if (!result)
                 return NotFound(new { message = "User not found" });
 
-            // 🔥 notify dashboard
             await _hubContext.Clients.All.SendAsync("ReceiveAdminUpdate");
 
             return Ok(new { message = "User banned successfully" });
         }
 
+        //[HttpDelete("users/{id}")]
+        //public async Task<IActionResult> DeleteUser(int id)
+        //{
+        //    var result = await _userRepository.DeleteUserAsync(id);
+
+        //    if (!result)
+        //        return NotFound(new { message = "User not found" });
+
+        //    return Ok(new { message = "User deleted successfully" });
+        //}
+
+        // 🔥 DELETE USER
         [HttpDelete("users/{id}")]
         public async Task<IActionResult> DeleteUser(int id)
         {
-            var result = await _userRepository.DeleteUserAsync(id);
+            var result = await _userService.DeleteUserAsync(id);
 
             if (!result)
                 return NotFound(new { message = "User not found" });
 
             return Ok(new { message = "User deleted successfully" });
         }
+
 
         [HttpGet("admin/all")]
         [Authorize(Roles = "Admin")]
@@ -123,10 +168,24 @@ namespace JobPortal.API.Controllers
     });
 }
 
+        //[HttpPut("unban/{id}")]
+        //public async Task<IActionResult> UnbanUser(int id)
+        //{
+        //    var result = await _userRepository.UnbanUserAsync(id);
+
+        //    if (!result)
+        //        return NotFound(new { message = "User not found" });
+
+        //    await _hubContext.Clients.All.SendAsync("ReceiveAdminUpdate");
+
+        //    return Ok(new { message = "User unbanned successfully" });
+        //}
+
+        // 🔥 UNBAN USER
         [HttpPut("unban/{id}")]
         public async Task<IActionResult> UnbanUser(int id)
         {
-            var result = await _userRepository.UnbanUserAsync(id);
+            var result = await _userService.UnbanUserAsync(id);
 
             if (!result)
                 return NotFound(new { message = "User not found" });
