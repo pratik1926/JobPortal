@@ -12,7 +12,14 @@ namespace JobPortal.Application.Interfaces
         Task DeleteJobAsync(int jobId, int userId);
         Task<Job> GetJobByIdAsync(int jobId);
 
-        Task<(List<Job> jobs, int total)> GetPagedJobsAsync(int page, int pageSize);
+        Task<(List<JobDto> jobs, int total)> GetPagedJobsAsync(int page, int pageSize);
         Task<(List<JobDto> jobs, int total)> GetPagedJobsForAdminAsync(int page, int pageSize);
+
+        // 🔥 NEW (PROVIDER PAGINATION)
+        Task<(List<JobDto> jobs, int total)> GetPagedJobsByProviderAsync(
+            int providerId,
+            int page,
+            int pageSize
+        );
     }
 }

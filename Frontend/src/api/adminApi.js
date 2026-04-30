@@ -18,15 +18,25 @@
 import api from "./axios";
 
 // 👥 USERS
-export const getAllUsers = () => api.get("/Admin/users");
+// export const getAllUsers = () => api.get("/Admin/users");
+
+export const getAllUsers = (page, pageSize) =>
+  api.get(`/Admin/users?page=${page}&pageSize=${pageSize}`);
+
+// export const getAllUsers = (page, pageSize) =>
+//   api.get(`/Admin/users?page=${page}&pageSize=${pageSize}`);
+
 export const deleteUser = (id) => api.delete(`/Admin/users/${id}`);
 export const unbanUser = (id) => api.put(`/Admin/unban/${id}`);
 
 export const banUser = (id) => api.put(`/Admin/ban/${id}`);
 
 // 💼 JOBS (admin view)
-export const getAllJobsAdmin = () =>
-  api.get("/Admin/admin/all");
+// export const getAllJobsAdmin = () =>
+//   api.get("/Admin/admin/all");
+
+export const getAllJobsAdmin = (page, pageSize) =>
+  api.get(`/Admin/admin/all?page=${page}&pageSize=${pageSize}`);
 
 export const getAnalytics = () => 
   api.get("/Admin/analytics");

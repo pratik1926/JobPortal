@@ -93,9 +93,74 @@ namespace JobPortal.Application.Services
         }
 
         // 🔹 GET PROVIDER APPLICATIONS
-        public async Task<IEnumerable<ApplicationEntity>> GetApplicationsForProviderAsync(int providerId)
+        //public async Task<IEnumerable<ApplicationEntity>> GetApplicationsForProviderAsync(int providerId)
+        //{
+        //    return await _jobRepository.GetApplicationsByProviderIdAsync(providerId);
+        //}
+        //public async Task<IEnumerable<ApplicationProviderDto>> GetApplicationsForProviderAsync(int providerId)
+        //{
+        //    var apps = await _jobRepository.GetApplicationsByProviderIdAsync(providerId);
+
+        //    return apps.Select(a => new ApplicationProviderDto
+        //    {
+        //        Id = a.Id,
+        //        SeekerEmail = a.Seeker?.Email,
+        //        JobTitle = a.Job?.Title,
+        //        Status = a.Status,
+        //        AppliedAt = a.AppliedAt,
+        //        ResumeUrl = a.ResumeUrl,
+        //        CoverLetter = a.CoverLetter
+        //    }).ToList();
+        //}
+
+        public async Task<(List<ApplicationProviderDto> applications, int total)>
+GetPagedApplicationsForProviderAsync(int providerId, int page, int pageSize)
         {
-            return await _jobRepository.GetApplicationsByProviderIdAsync(providerId);
+            var result = await _jobRepository.GetPagedApplicationsByProviderIdAsync(
+                providerId,
+                page,
+                pageSize
+            );
+
+            var apps = result.applications;
+            var total = result.total;
+
+            var mapped = apps.Select(a => new ApplicationProviderDto
+            {
+                Id = a.Id,
+                SeekerEmail = a.Seeker?.Email,
+                JobTitle = a.Job?.Title,
+                Status = a.Status,
+                AppliedAt = a.AppliedAt,
+                ResumeUrl = a.ResumeUrl,
+                CoverLetter = a.CoverLetter
+            }).ToList();
+
+            return (mapped, total);
+        }
+
+        public async Task<(List<ApplicationProviderDto> applications, int total)>
+GetPagedApplicationsForSeekerAsync(int seekerId, int page, int pageSize)
+        {
+            var (apps, total) =
+                await _jobRepository.GetPagedApplicationsBySeekerIdAsync(
+                    seekerId,
+                    page,
+                    pageSize
+                );
+
+            var result = apps.Select(a => new ApplicationProviderDto
+            {
+                Id = a.Id,
+                SeekerEmail = a.Seeker?.Email,
+                JobTitle = a.Job?.Title,
+                Status = a.Status,
+                AppliedAt = a.AppliedAt,
+                ResumeUrl = a.ResumeUrl,
+                CoverLetter = a.CoverLetter
+            }).ToList();
+
+            return (result, total);
         }
 
         // 🔥 STATE MACHINE (NEW)
