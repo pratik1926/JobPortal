@@ -497,36 +497,51 @@ namespace JobPortal.API.Controllers
             });
         }
 
-        // 🔹 GET MY APPLICATIONS
-        [HttpGet("my-applications")]
-        [Authorize(Roles = "Seeker")]
-        public async Task<IActionResult> GetMyApplications()
-        {
-            var userId = GetUserId();
-
-            if (userId == null)
-                return Unauthorized();
-
-            var applications = await _applicationService.GetMyApplicationsAsync(userId.Value);
-
-            return Ok(applications);
-        }
-
-        // 🔥 GET APPLICATIONS FOR PROVIDER (THIS IS WHAT YOU ARE MISSING)
-        //[HttpGet("applications")]
-        //[Authorize(Roles = "Provider")]
-        //public async Task<IActionResult> GetApplicationsForMyJobs()
+        //// 🔹 GET MY APPLICATIONS
+        //[HttpGet("my-applications")]
+        //[Authorize(Roles = "Seeker")]
+        //public async Task<IActionResult> GetMyApplications()
         //{
         //    var userId = GetUserId();
 
         //    if (userId == null)
         //        return Unauthorized();
 
-        //    var applications =
-        //        await _applicationService.GetApplicationsForProviderAsync(userId.Value);
+        //    var applications = await _applicationService.GetMyApplicationsAsync(userId.Value);
 
         //    return Ok(applications);
         //}
+
+        [HttpGet("my-applications")]
+        [Authorize(Roles = "Seeker")]
+        public async Task<IActionResult> GetMyApplications(int page = 1, int pageSize = 10)
+        {
+            var userId = GetUserId();
+
+            if (userId == null)
+                return Unauthorized();
+
+            pageSize = Math.Min(pageSize, 50);
+
+            var (applications, total) =
+                await _applicationService.GetPagedApplicationsForSeekerAsync(
+                    userId.Value,
+                    page,
+                    pageSize
+                );
+
+            return Ok(new
+            {
+                data = applications,
+                total,
+                page,
+                pageSize
+            });
+        }
+
+
+
+
 
         [HttpGet("applications")]
         [Authorize(Roles = "Provider")]

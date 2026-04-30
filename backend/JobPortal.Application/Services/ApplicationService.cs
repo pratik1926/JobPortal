@@ -139,6 +139,30 @@ GetPagedApplicationsForProviderAsync(int providerId, int page, int pageSize)
             return (mapped, total);
         }
 
+        public async Task<(List<ApplicationProviderDto> applications, int total)>
+GetPagedApplicationsForSeekerAsync(int seekerId, int page, int pageSize)
+        {
+            var (apps, total) =
+                await _jobRepository.GetPagedApplicationsBySeekerIdAsync(
+                    seekerId,
+                    page,
+                    pageSize
+                );
+
+            var result = apps.Select(a => new ApplicationProviderDto
+            {
+                Id = a.Id,
+                SeekerEmail = a.Seeker?.Email,
+                JobTitle = a.Job?.Title,
+                Status = a.Status,
+                AppliedAt = a.AppliedAt,
+                ResumeUrl = a.ResumeUrl,
+                CoverLetter = a.CoverLetter
+            }).ToList();
+
+            return (result, total);
+        }
+
         // 🔥 STATE MACHINE (NEW)
         private bool IsValidTransition(string currentStatus, string newStatus)
         {

@@ -41,5 +41,8 @@ namespace JobPortal.Application.Interfaces
 
         Task<(List<JobPortal.Domain.Entities.Application> applications, int total)>
 GetPagedApplicationsByProviderIdAsync(int providerId, int page, int pageSize);
+
+        Task<(List<JobPortal.Domain.Entities.Application> applications, int total)>
+GetPagedApplicationsBySeekerIdAsync(int seekerId, int page, int pageSize);
     }
 }

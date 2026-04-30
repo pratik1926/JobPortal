@@ -214,5 +214,24 @@ namespace JobPortal.Infrastructure.Repositories
             return (jobs, total);
         }
 
+        public async Task<(List<JobPortal.Domain.Entities.Application> applications, int total)>
+GetPagedApplicationsBySeekerIdAsync(int seekerId, int page, int pageSize)
+        {
+            var query = _context.Applications
+                .Include(a => a.Job)
+                .Include(a => a.Seeker)
+                .Where(a => a.SeekerId == seekerId);
+
+            var total = await query.CountAsync();
+
+            var applications = await query
+                .OrderByDescending(a => a.AppliedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (applications, total);
+        }
+
     }
 }

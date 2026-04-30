@@ -64,15 +64,21 @@ export const getMyJobs = (page = 1, pageSize = 5) =>
 export const updateJob = (id, data) => api.put(`/Job/${id}`, data);
 export const deleteJob = (jobId) => api.delete(`/Job/${jobId}`);
 
-// 🌐 Public
-export const getAllJobs = () => api.get("/Job");
+// // 🌐 Public
+// export const getAllJobs = () => api.get("/Job");
+
+export const getAllJobs = (page = 1, pageSize = 5) =>
+  api.get(`/Job?page=${page}&pageSize=${pageSize}`);
 
 // 👤 Seeker
 export const applyToJob = (jobId, formData) =>
   api.post(`/Job/apply/${jobId}`, formData);
 
-export const getMyApplications = () =>
-  api.get("/Job/my-applications");
+// export const getMyApplications = () =>
+//   api.get("/Job/my-applications");
+
+export const getMyApplications = (page = 1, pageSize = 5) =>
+  api.get(`/Job/my-applications?page=${page}&pageSize=${pageSize}`);
 
 // 📥 Provider view applications
 // export const getApplicationsForProvider = () =>
