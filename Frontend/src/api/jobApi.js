@@ -55,7 +55,12 @@ import api from "./axios";
 
 // 🧑‍💼 Provider
 export const createJob = (data) => api.post("/Job", data);
-export const getMyJobs = () => api.get("/Job/my-jobs");
+// export const getMyJobs = () => api.get("/Job/my-jobs");
+
+// 🧑‍💼 Provider
+export const getMyJobs = (page = 1, pageSize = 5) =>
+  api.get(`/Job/my-jobs?page=${page}&pageSize=${pageSize}`);
+
 export const updateJob = (id, data) => api.put(`/Job/${id}`, data);
 export const deleteJob = (jobId) => api.delete(`/Job/${jobId}`);
 
@@ -70,13 +75,13 @@ export const getMyApplications = () =>
   api.get("/Job/my-applications");
 
 // 📥 Provider view applications
-export const getApplicationsForProvider = () =>
-  api.get("/Job/applications");
+// export const getApplicationsForProvider = () =>
+//   api.get("/Job/applications");
+
+export const getApplicationsForProvider = (page = 1, pageSize = 5) =>
+  api.get(`/Job/applications?page=${page}&pageSize=${pageSize}`);
 
 export const updateApplicationStatus = (applicationId, status) =>
   api.put(`/Job/applications/${applicationId}/status`, {
     status,
   });
-
-
-

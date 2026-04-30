@@ -1,19 +1,35 @@
 import { useEffect, useState } from "react";
-import { getApplicationsForProvider, updateApplicationStatus } from "../../api/jobApi";
+import {
+  getApplicationsForProvider,
+  updateApplicationStatus,
+} from "../../api/jobApi";
 
 export default function ApplicationsPage() {
   const [applications, setApplications] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // 🔥 PAGINATION STATE
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(5);
+  const [total, setTotal] = useState(0);
 
   useEffect(() => {
     fetchApplications();
-  }, []);
+  }, [page, pageSize]);
 
   const fetchApplications = async () => {
     try {
-      const res = await getApplicationsForProvider();
-      setApplications(res.data);
+      const res = await getApplicationsForProvider(page, pageSize);
+
+      console.log("APPLICATION RESPONSE:", res.data);
+
+      // ✅ IMPORTANT FIX
+      setApplications(res.data.data || []);
+      setTotal(res.data.total || 0);
     } catch (err) {
       console.error(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -21,9 +37,9 @@ export default function ApplicationsPage() {
     try {
       await updateApplicationStatus(id, status);
 
-      // ✅ Update UI instantly
-      setApplications(prev =>
-        prev.map(app =>
+      // ✅ instant UI update
+      setApplications((prev) =>
+        prev.map((app) =>
           app.id === id ? { ...app, status } : app
         )
       );
@@ -44,29 +60,45 @@ export default function ApplicationsPage() {
     }
   };
 
+  const totalPages = Math.ceil(total / pageSize);
+
+  if (loading) {
+    return <p>Loading applications...</p>;
+  }
+
   return (
-    <div>
+    <div style={{ padding: "20px" }}>
       <h2>Applications</h2>
 
       {applications.length === 0 ? (
         <p>No applications found</p>
       ) : (
-        applications.map(app => (
+        applications.map((app) => (
           <div
             key={app.id}
             style={{
               border: "1px solid #ccc",
               padding: "15px",
               marginBottom: "15px",
-              borderRadius: "8px"
+              borderRadius: "8px",
             }}
           >
-            <p><strong>Job:</strong> {app.jobTitle}</p>
-            <p><strong>Email:</strong> {app.seekerEmail}</p>
+            <p>
+              <strong>Job:</strong> {app.jobTitle}
+            </p>
+
+            <p>
+              <strong>Email:</strong> {app.seekerEmail}
+            </p>
 
             <p>
               <strong>Status:</strong>{" "}
-              <span style={{ color: getStatusColor(app.status), fontWeight: "bold" }}>
+              <span
+                style={{
+                  color: getStatusColor(app.status),
+                  fontWeight: "bold",
+                }}
+              >
                 {app.status}
               </span>
             </p>
@@ -81,33 +113,38 @@ export default function ApplicationsPage() {
               </a>
             )}
 
-            <br /><br />
+            <br />
+            <br />
 
             {/* 🔥 BUTTON LOGIC */}
             {app.status === "Applied" ? (
               <>
                 <button
-                  onClick={() => handleStatusChange(app.id, "Approved")}
+                  onClick={() =>
+                    handleStatusChange(app.id, "Approved")
+                  }
                   style={{
                     marginRight: "10px",
                     background: "green",
                     color: "white",
                     padding: "6px 12px",
                     border: "none",
-                    cursor: "pointer"
+                    cursor: "pointer",
                   }}
                 >
                   Accept
                 </button>
 
                 <button
-                  onClick={() => handleStatusChange(app.id, "Rejected")}
+                  onClick={() =>
+                    handleStatusChange(app.id, "Rejected")
+                  }
                   style={{
                     background: "red",
                     color: "white",
                     padding: "6px 12px",
                     border: "none",
-                    cursor: "pointer"
+                    cursor: "pointer",
                   }}
                 >
                   Reject
@@ -120,7 +157,7 @@ export default function ApplicationsPage() {
                   background: "gray",
                   color: "white",
                   padding: "6px 12px",
-                  border: "none"
+                  border: "none",
                 }}
               >
                 {app.status}
@@ -129,6 +166,52 @@ export default function ApplicationsPage() {
           </div>
         ))
       )}
+
+      {/* 🔥 PAGINATION CONTROLS */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          marginTop: "20px",
+          alignItems: "center",
+        }}
+      >
+        {/* PREV */}
+        <button
+          onClick={() => setPage((p) => Math.max(p - 1, 1))}
+          disabled={page === 1}
+        >
+          Prev
+        </button>
+
+        {/* PAGE INFO */}
+        <span>
+          Page {page} / {totalPages || 1}
+        </span>
+
+        {/* NEXT */}
+        <button
+          onClick={() =>
+            setPage((p) => Math.min(p + 1, totalPages))
+          }
+          disabled={page === totalPages || totalPages === 0}
+        >
+          Next
+        </button>
+
+        {/* PAGE SIZE */}
+        <select
+          value={pageSize}
+          onChange={(e) => {
+            setPage(1);
+            setPageSize(Number(e.target.value));
+          }}
+        >
+          <option value={5}>5</option>
+          <option value={10}>10</option>
+          <option value={20}>20</option>
+        </select>
+      </div>
     </div>
   );
 }

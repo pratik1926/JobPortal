@@ -27,7 +27,10 @@ namespace JobPortal.Application.Interfaces
         // 🔥 FIXED: return DTO (not entity)
         Task<IEnumerable<MyApplicationDto>> GetMyApplicationsAsync(int seekerId);
 
-        Task<IEnumerable<JobPortal.Domain.Entities.Application>> GetApplicationsForProviderAsync(int providerId);
+        //Task<IEnumerable<ApplicationProviderDto>> GetApplicationsForProviderAsync(int providerId);
+
+        Task<(List<ApplicationProviderDto> applications, int total)>
+GetPagedApplicationsForProviderAsync(int providerId, int page, int pageSize);
 
         Task UpdateApplicationStatusAsync(int applicationId, string status, int providerId);
 

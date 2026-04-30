@@ -33,6 +33,13 @@ namespace JobPortal.Application.Interfaces
         Task<(List<Job> jobs, int total)> GetPagedJobsAsync(int page, int pageSize);
 
         Task<(List<JobDto> jobs, int total)> GetPagedJobsForAdminAsync(int page, int pageSize);
+        Task<(List<Job> jobs, int total)> GetPagedJobsByProviderIdAsync(
+            int providerId,
+            int page,
+            int pageSize
+        );
 
+        Task<(List<JobPortal.Domain.Entities.Application> applications, int total)>
+GetPagedApplicationsByProviderIdAsync(int providerId, int page, int pageSize);
     }
 }

@@ -53,6 +53,7 @@ namespace JobPortal.Infrastructure.Repositories
                 .Include(a => a.Job)
                 .Include(a => a.Seeker)
                 .Where(a => a.Job.ProviderId == providerId)
+                .OrderByDescending(a => a.AppliedAt)
                 .ToListAsync();
         }
 
@@ -174,5 +175,44 @@ namespace JobPortal.Infrastructure.Repositories
 
             return (jobs, total);
         }
+
+        public async Task<(List<ApplicationEntity> applications, int total)>
+        GetPagedApplicationsByProviderIdAsync(int providerId, int page, int pageSize)
+        {
+            var query = _context.Applications
+                .Include(a => a.Job)
+                .Include(a => a.Seeker)
+                .Where(a => a.Job.ProviderId == providerId);
+
+            var total = await query.CountAsync();
+
+            var applications = await query
+                .OrderByDescending(a => a.AppliedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (applications, total);
+        }
+        public async Task<(List<Job> jobs, int total)> GetPagedJobsByProviderIdAsync(
+    int providerId,
+    int page,
+    int pageSize)
+        {
+            var query = _context.Jobs
+                .Include(j => j.Provider)
+                .Where(j => j.ProviderId == providerId);
+
+            var total = await query.CountAsync();
+
+            var jobs = await query
+                .OrderByDescending(j => j.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (jobs, total);
+        }
+
     }
 }
