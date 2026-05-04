@@ -17,6 +17,7 @@ using JobPortal.API.Services;
 using JobPortal.API.Infrastructure;
 using Microsoft.AspNetCore.SignalR;
 using JobPortal.API.Middleware;
+using Microsoft.AspNetCore.Mvc;
 
 namespace JobPortal.API
 {
@@ -41,6 +42,12 @@ namespace JobPortal.API
             // Add services to the container.
 
             builder.Services.AddControllers();
+
+            builder.Services.Configure<ApiBehaviorOptions>(options =>
+            {
+                options.SuppressModelStateInvalidFilter = true;
+            });
+
             builder.Services.AddFluentValidationAutoValidation();
             builder.Services.AddValidatorsFromAssemblyContaining<RegisterUserDtoValidator>();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -178,13 +185,17 @@ namespace JobPortal.API
             // 🔥 STEP 3 — Add request logging
             app.UseSerilogRequestLogging();
 
-            app.UseMiddleware<JobPortal.API.Middleware.ExceptionMiddleware>();
+            
 
             app.UseAuthentication();
 
+            app.UseMiddleware<ExceptionMiddleware>();
+            app.UseMiddleware<UserStatusMiddleware>();
+
             app.UseAuthorization();
 
-            app.UseMiddleware<UserStatusMiddleware>();
+            //app.UseMiddleware<UserStatusMiddleware>();
+
 
             app.MapHub<NotificationHub>("/hubs/notification");
 

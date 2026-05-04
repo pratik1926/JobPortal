@@ -1,5 +1,5 @@
 import { useState } from "react";
-import axios from "axios";
+import axiosClient from "../api/axiosClient";
 import toast from "react-hot-toast";
 import { X, MapPin } from "lucide-react";
 
@@ -9,45 +9,75 @@ export default function JobApplyModal({ job, onClose }) {
   const [loading, setLoading] = useState(false);
 
   const handleApply = async () => {
-    if (!resume) {
-      toast.error("Please upload your resume");
-      return;
-    }
+  if (!resume) {
+    toast.error("Please upload your resume");
+    return;
+  }
 
-    try {
-      setLoading(true);
+  try {
+    setLoading(true);
 
-      const token = localStorage.getItem("token"); // 🔥 IMPORTANT
+    const formData = new FormData();
+    formData.append("Resume", resume);
+    formData.append("CoverLetter", coverLetter);
 
-      const formData = new FormData();
-      formData.append("Resume", resume);
-      formData.append("CoverLetter", coverLetter);
+    await axiosClient.post(`/Job/apply/${job.id}`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
 
-      await axios.post(
-        `https://localhost:7240/api/Job/apply/${job.id}`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-            Authorization: `Bearer ${token}`, // ✅ FIX
-          },
-        }
-      );
+    toast.success("Application submitted!");
+    onClose();
 
-      toast.success("Application submitted!");
-      onClose();
-    } catch (err) {
-      console.error(err);
+  } catch (err) {
+    // ❌ already handled globally
+  } finally {
+    setLoading(false);
+  }
+};
 
-      if (err.response?.status === 401) {
-        toast.error("Unauthorized — please login as Seeker");
-      } else {
-        toast.error("Failed to apply");
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
+  // const handleApply = async () => {
+  //   if (!resume) {
+  //     toast.error("Please upload your resume");
+  //     return;
+  //   }
+
+  //   try {
+  //     setLoading(true);
+
+  //     const token = localStorage.getItem("token"); // 🔥 IMPORTANT
+
+  //     const formData = new FormData();
+  //     formData.append("Resume", resume);
+  //     formData.append("CoverLetter", coverLetter);
+
+  //     await axios.post(
+  //       `https://localhost:7240/api/Job/apply/${job.id}`,
+  //       formData,
+  //       {
+  //         headers: {
+  //           "Content-Type": "multipart/form-data",
+  //           Authorization: `Bearer ${token}`, // ✅ FIX
+  //         },
+  //       }
+  //     );
+
+  //     toast.success("Application submitted!");
+  //     onClose();
+  //   } catch (err) {
+  //     console.error(err);
+
+  //     if (err.response?.status === 401) {
+  //       toast.error("Unauthorized — please login as Seeker");
+  //     } else {
+  //       toast.error("Failed to apply");
+  //     }
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-center z-50">

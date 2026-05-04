@@ -119,6 +119,8 @@ public class NotificationService : INotificationService
         await _repo.AddAsync(notification);
         await _repo.SaveChangesAsync();
 
+        Console.WriteLine("🔥 Notification created for user: " + dto.UserId);
+
         // 🔥 REAL-TIME SEND
         await _sender.SendAsync(dto.UserId, new
         {

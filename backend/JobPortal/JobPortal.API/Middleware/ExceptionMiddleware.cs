@@ -73,8 +73,10 @@
 //}
 
 
+using JobPortal.Application.Exceptions;
 using System.Net;
 using System.Text.Json;
+using FluentValidation;
 
 namespace JobPortal.API.Middleware
 {
@@ -84,7 +86,10 @@ namespace JobPortal.API.Middleware
         private readonly ILogger<ExceptionMiddleware> _logger;
         private readonly IWebHostEnvironment _env;
 
-        public ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger, IWebHostEnvironment env)
+        public ExceptionMiddleware(
+            RequestDelegate next,
+            ILogger<ExceptionMiddleware> logger,
+            IWebHostEnvironment env)
         {
             _next = next;
             _logger = logger;
@@ -99,7 +104,6 @@ namespace JobPortal.API.Middleware
             }
             catch (Exception ex)
             {
-                // 🔥 FULL LOG (always)
                 _logger.LogError(ex, "Unhandled exception occurred");
 
                 await HandleExceptionAsync(context, ex);
@@ -111,17 +115,37 @@ namespace JobPortal.API.Middleware
             context.Response.ContentType = "application/json";
 
             var statusCode = HttpStatusCode.InternalServerError;
-            var message = ex.Message;
+            string message = "Something went wrong";
 
             switch (ex)
             {
-                case UnauthorizedAccessException:
-                    statusCode = HttpStatusCode.Unauthorized;
+                // 🔥 Custom Exceptions
+                case BadRequestException badRequest:
+                    statusCode = HttpStatusCode.BadRequest;
+                    message = badRequest.Message;
                     break;
 
-                case ArgumentException:
-                case InvalidOperationException:
+                case NotFoundException notFound:
+                    statusCode = HttpStatusCode.NotFound;
+                    message = notFound.Message;
+                    break;
+
+                case UnauthorizedAccessException:
+                    statusCode = HttpStatusCode.Unauthorized;
+                    message = "Unauthorized access";
+                    break;
+
+                // 🔥 FluentValidation
+                case ValidationException validationEx:
                     statusCode = HttpStatusCode.BadRequest;
+                    message = validationEx.Errors.FirstOrDefault()?.ErrorMessage ?? "Validation failed";
+                    break;
+
+                // 🔥 Fallback (for dev clarity)
+                case ArgumentException argEx:
+                case InvalidOperationException invOpEx:
+                    statusCode = HttpStatusCode.BadRequest;
+                    message = ex.Message;
                     break;
             }
 
@@ -131,9 +155,10 @@ namespace JobPortal.API.Middleware
             {
                 success = false,
                 message,
-                statusCode = context.Response.StatusCode,
+                statusCode = (int)statusCode,
+                timestamp = DateTime.UtcNow,
 
-                // 🔥 SHOW DETAILS ONLY IN DEV
+                // only for dev
                 detail = _env.IsDevelopment() ? ex.StackTrace : null,
                 exceptionType = _env.IsDevelopment() ? ex.GetType().Name : null
             };
