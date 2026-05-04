@@ -434,8 +434,11 @@ namespace JobPortal.API.Controllers
         // 🔹 CREATE JOB
         [HttpPost]
         [Authorize(Roles = "Provider")]
-        public async Task<IActionResult> CreateJob(CreateJobDto dto)
+        public async Task<IActionResult> CreateJob([FromBody] CreateJobDto dto)
         {
+
+            if (dto == null)
+                throw new BadRequestException("Invalid request payload");
             var userId = GetUserId();
 
             if (userId == null)
@@ -620,5 +623,25 @@ namespace JobPortal.API.Controllers
 
             return Ok(new { message = "Job deleted successfully" });
         }
+
+        [HttpPost("bulk")]
+        [Authorize(Roles = "Provider")]
+        public async Task<IActionResult> BulkCreateJobs([FromBody]List<CreateJobBulkDto> jobs)
+        {
+            if (jobs == null || !jobs.Any())
+                throw new BadRequestException("No jobs provided");
+
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+
+            if (userIdClaim == null)
+                return Unauthorized();
+
+            var providerId = int.Parse(userIdClaim.Value);
+
+            var result = await _jobService.BulkCreateAsync(jobs, providerId);
+
+            return Ok(result);
+        }
+
     }
 }

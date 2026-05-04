@@ -54,6 +54,8 @@ namespace JobPortal.API
             builder.Services.AddEndpointsApiExplorer();
             //builder.Services.AddSwaggerGen();
 
+            builder.Services.AddValidatorsFromAssemblyContaining<CreateJobBulkDtoValidator>();
+
             builder.Services.AddSwaggerGen(options =>
             {
                 options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
