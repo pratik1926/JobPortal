@@ -386,6 +386,7 @@ using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using JobPortal.API.DTOs;
 using JobPortal.Application.DTOs;
+using JobPortal.Application.Exceptions;
 
 namespace JobPortal.API.Controllers
 {
@@ -456,7 +457,7 @@ namespace JobPortal.API.Controllers
                 return Unauthorized();
 
             if (request.Resume == null || request.Resume.Length == 0)
-                return BadRequest("Resume is required");
+                throw new BadRequestException("Resume is required");
 
             using var ms = new MemoryStream();
             await request.Resume.CopyToAsync(ms);

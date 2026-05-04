@@ -37,6 +37,9 @@ namespace JobPortal.API.Services
 
         public async Task SendAsync(int userId, object payload)
         {
+
+            Console.WriteLine("🚀 Sending SignalR to user: " + userId);
+
             await _hubContext.Clients.User(userId.ToString())
                 .SendAsync("ReceiveNotification", payload);
         }

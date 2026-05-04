@@ -3,6 +3,7 @@ using JobPortal.Application.Interfaces;
 using JobPortal.Application.DTOs;
 using JobPortal.Domain.Entities;
 using ApplicationEntity = JobPortal.Domain.Entities.Application;
+using JobPortal.Application.Exceptions;
 
 namespace JobPortal.Application.Services
 {
@@ -29,11 +30,11 @@ namespace JobPortal.Application.Services
             // 🔒 Prevent duplicate application
             var alreadyApplied = await _jobRepository.HasUserApplied(jobId, seekerId);
             if (alreadyApplied)
-                throw new Exception("You already applied to this job");
+                throw new BadRequestException("You have already applied to this job");
 
             // 🔒 Validate file
             if (dto.Resume == null || dto.Resume.Length == 0)
-                throw new Exception("Resume is required");
+                throw new BadRequestException("Resume is required");
 
             var extension = Path.GetExtension(dto.FileName).ToLower();
             if (extension != ".pdf")
