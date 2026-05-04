@@ -585,6 +585,26 @@ namespace JobPortal.API.Controllers
             return Ok(new { message = "Job updated successfully" });
         }
 
+        [HttpPut("applications/{id}/status")]
+        [Authorize(Roles = "Provider")]
+        public async Task<IActionResult> UpdateApplicationStatus(int id, [FromBody] UpdateStatusDto dto)
+        {
+            var userId = GetUserId();
+
+            if (userId == null)
+                return Unauthorized();
+
+            await _applicationService.UpdateApplicationStatusAsync(
+                id,
+                dto.Status,
+                userId.Value
+            );
+
+            return Ok(new { message = "Application status updated successfully" });
+        }
+
+
+
         // 🔹 DELETE JOB
         [HttpDelete("{id}")]
         [Authorize(Roles = "Provider")]
