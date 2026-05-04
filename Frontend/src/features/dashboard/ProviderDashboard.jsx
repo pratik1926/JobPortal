@@ -4,6 +4,8 @@ import PostJob from "./PostJob";
 import EditJobModal from "./EditJobModal";
 import { Trash2, Pencil } from "lucide-react";
 import connection from "../../services/signalr";
+import BulkJobUpload from "../../components/BulkJobUpload"
+
 
 export default function ProviderDashboard() {
   const [jobs, setJobs] = useState([]);
@@ -102,6 +104,9 @@ export default function ProviderDashboard() {
       <h2 className="text-2xl font-bold">Provider Dashboard</h2>
 
       <PostJob onJobCreated={fetchJobs} />
+
+      {/* 🔥 BULK JOB UPLOAD */}
+      <BulkJobUpload />
 
       <h3 className="text-xl font-semibold mt-6">My Jobs</h3>
 

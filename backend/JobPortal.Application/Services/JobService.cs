@@ -112,6 +112,7 @@
 //}
 
 using JobPortal.Application.DTOs;
+using JobPortal.Application.Exceptions;
 using JobPortal.Application.Interfaces;
 using JobPortal.Domain.Entities;
 
@@ -134,6 +135,10 @@ namespace JobPortal.Application.Services
 
         public async Task CreateJobAsync(CreateJobDto dto, int providerId)
         {
+
+            if (dto == null)
+                throw new BadRequestException("Invalid job data");
+
             var job = new Job
             {
                 Title = dto.Title,
@@ -230,6 +235,63 @@ namespace JobPortal.Application.Services
                 ProviderName = j.Provider?.Name,
                 ProviderEmail = j.Provider?.Email
             };
+        }
+
+        public async Task<List<BulkJobResultDto>> BulkCreateAsync(
+    List<CreateJobBulkDto> jobs,
+    int providerId)
+        {
+            if (jobs == null || !jobs.Any())
+                throw new BadRequestException("No jobs provided");
+
+            var results = new List<BulkJobResultDto>();
+
+            foreach (var job in jobs)
+            {
+                try
+                {
+                    // 🔥 Validation (minimal but important)
+                    if (string.IsNullOrWhiteSpace(job.Title))
+                        throw new BadRequestException("Title is required");
+
+                    if (job.Budget <= 0)
+                        throw new BadRequestException("Budget must be greater than 0");
+
+                    // 🔥 Map bulk DTO → existing DTO
+                    var dto = new CreateJobDto
+                    {
+                        Title = job.Title,
+                        Description = job.Description,
+                        Budget = job.Budget,
+                        Location = job.Location,
+                        Skills = job.Skills != null
+                                ? string.Join(",", job.Skills)
+                                : ""
+                    };
+
+                    // 🔥 Reuse your existing logic
+                    await CreateJobAsync(dto, providerId);
+
+                    results.Add(new BulkJobResultDto
+                    {
+                        Title = job.Title,
+                        Status = "Success",
+                        Error = null
+                    });
+                }
+                catch (Exception ex)
+                {
+                    // 🔥 IMPORTANT: DO NOT throw → collect error per row
+                    results.Add(new BulkJobResultDto
+                    {
+                        Title = job.Title ?? "Unknown",
+                        Status = "Failed",
+                        Error = ex.Message
+                    });
+                }
+            }
+
+            return results;
         }
     }
 }
