@@ -238,7 +238,7 @@ namespace JobPortal.Application.Services
         }
 
         public async Task<List<BulkJobResultDto>> BulkCreateAsync(
-    List<CreateJobBulkDto> jobs,
+    List<CreateJobDto> jobs,
     int providerId)
         {
             if (jobs == null || !jobs.Any())

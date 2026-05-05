@@ -18,6 +18,6 @@ namespace JobPortal.Application.Interfaces
         // 🔥 NEW (PROVIDER PAGINATION)
         Task<(List<JobDto> jobs, int total)> GetPagedJobsByProviderAsync(int providerId, int page, int pageSize);
 
-        Task<List<BulkJobResultDto>> BulkCreateAsync(List<CreateJobBulkDto> jobs,int providerId);
+        Task<List<BulkJobResultDto>> BulkCreateAsync(List<CreateJobDto> jobs,int providerId);
     }
 }
