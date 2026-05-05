@@ -1,4 +1,5 @@
 ﻿using JobPortal.Application.DTOs;
+using JobPortal.Application.Exceptions;
 using JobPortal.Application.Interfaces;
 using JobPortal.Domain.Entities;
 
@@ -47,6 +48,38 @@ namespace JobPortal.Application.Services
         public async Task<bool> DeleteUserAsync(int id)
         {
             return await _userRepository.DeleteUserAsync(id);
+        }
+
+        public async Task<UserProfileDto> GetProfileAsync(int userId)
+        {
+            var user = await _userRepository.GetUserByIdAsync(userId);
+
+            if (user == null)
+                throw new NotFoundException("User not found");
+
+            return new UserProfileDto
+            {
+                Name = user.Name,
+                Email = user.Email,
+                Role = user.Role
+            };
+        }
+
+        public async Task ChangePasswordAsync(int userId, ChangePasswordDto dto)
+        {
+            var user = await _userRepository.GetUserByIdAsync(userId);
+
+            if (user == null)
+                throw new NotFoundException("User not found");
+
+            // 🔥 VERIFY CURRENT PASSWORD
+            if (!BCrypt.Net.BCrypt.Verify(dto.CurrentPassword, user.PasswordHash))
+                throw new BadRequestException("Current password is incorrect");
+
+            // 🔥 HASH NEW PASSWORD
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
+
+            await _userRepository.UpdateUserAsync(user);
         }
     }
 }

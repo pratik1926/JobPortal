@@ -43,18 +43,18 @@ namespace JobPortal.API
 
             builder.Services.AddControllers();
 
-            builder.Services.Configure<ApiBehaviorOptions>(options =>
-            {
-                options.SuppressModelStateInvalidFilter = true;
-            });
+            //builder.Services.Configure<ApiBehaviorOptions>(options =>
+            //{
+            //    options.SuppressModelStateInvalidFilter = true;
+            //});
 
             builder.Services.AddFluentValidationAutoValidation();
             builder.Services.AddValidatorsFromAssemblyContaining<RegisterUserDtoValidator>();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             //builder.Services.AddSwaggerGen();
-
-            builder.Services.AddValidatorsFromAssemblyContaining<CreateJobBulkDtoValidator>();
+            builder.Services.AddValidatorsFromAssemblyContaining<ChangePasswordDtoValidator>();
+            // builder.Services.AddValidatorsFromAssemblyContaining<CreateJobBulkDtoValidator>();
 
             builder.Services.AddSwaggerGen(options =>
             {

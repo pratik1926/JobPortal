@@ -5,6 +5,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import Register from "./pages/Register";
 import Login from "./pages/Login";
 import Home from "./pages/Home";
+import ForgotPassword from "./pages/ForgotPassword";
 
 // 🧑‍💼 Provider
 import Dashboard from "./pages/Dashboard";
@@ -27,7 +28,10 @@ import AdminDashboard from "./pages/Admin/AdminDashboard";
 import AdminUsers from "./pages/Admin/AdminUsers";
 import AdminJobs from "./pages/Admin/AdminJobs";
 
-import ForgotPassword from "./pages/ForgotPassword";
+
+
+import Profile from "./features/profile/Profile";
+
 
 function App() {
   return (
@@ -38,9 +42,9 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-
-        {/* 🔥 ADD THIS */}
         <Route path="/forgot-password" element={<ForgotPassword />} />
+
+        
 
         {/* 🔒 ADMIN ROUTES  */}
         <Route
@@ -66,6 +70,10 @@ function App() {
         >
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/applications" element={<ApplicationsPage />} />
+
+          {/* 🔥 COMMON (Provider) */}
+          <Route path="/provider/profile" element={<Profile />} />
+          <Route path="/provider/settings" element={<div>Settings Page</div>} />
         </Route>
 
         {/* 🔒 SEEKER ROUTES */}
@@ -78,6 +86,11 @@ function App() {
         >
           <Route path="/seeker-dashboard" element={<SeekerDashboard />} />
           <Route path="/my-applications" element={<MyApplications />} />
+
+           {/* 🔥 ADD THESE */}
+          <Route path="/seeker/profile" element={<Profile />} />
+          <Route path="/seeker/saved-jobs" element={<div>Saved Jobs</div>} />
+          <Route path="/seeker/settings" element={<div>Settings</div>} />
         </Route>
 
         
