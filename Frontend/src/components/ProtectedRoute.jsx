@@ -27,6 +27,10 @@ export default function ProtectedRoute({ children, role }) {
     return <Navigate to="/login" replace />;
   }
 
+    // 🔥 Normalize role (IMPORTANT FIX)
+  const normalizedUserRole = userRole?.toLowerCase();
+  const normalizedRequiredRole = role?.toLowerCase();
+
   // 🔒 Role check
   if (role && userRole !== role) {
     return <Navigate to="/" replace />;

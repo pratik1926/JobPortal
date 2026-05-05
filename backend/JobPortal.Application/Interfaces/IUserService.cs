@@ -16,5 +16,9 @@ namespace JobPortal.Application.Interfaces
         Task<bool> BanUserAsync(int id);
         Task<bool> UnbanUserAsync(int id);
         Task<bool> DeleteUserAsync(int id);
+
+        Task<UserProfileDto> GetProfileAsync(int userId);
+
+        Task ChangePasswordAsync(int userId, ChangePasswordDto dto);
     }
 }

@@ -4,6 +4,8 @@ using JobPortal.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using JobPortal.API.Hubs;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace JobPortal.API.Controllers;
 
@@ -13,10 +15,12 @@ public class UserController : ControllerBase
 {
     private readonly IAuthService _authService;
     private readonly IHubContext<NotificationHub> _hubContext;
-    public UserController(IAuthService authService, IHubContext<NotificationHub> hubContext)
+    private readonly IUserService _userService;
+    public UserController(IAuthService authService, IHubContext<NotificationHub> hubContext, IUserService userService)
     {
         _authService = authService;
         _hubContext = hubContext;
+        _userService = userService;
     }
 
     [HttpPost("register")]
@@ -93,5 +97,25 @@ public class UserController : ControllerBase
         });
 
         return Ok("Notification sent");
+    }
+
+    [HttpGet("profile")]
+    [Authorize]
+    public async Task<IActionResult> GetProfile()
+    {
+        var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+        var user = await _userService.GetProfileAsync(userId);
+        return Ok(user);
+    }
+
+    [HttpPut("change-password")]
+    [Authorize]
+    public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto)
+    {
+        var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+
+        await _userService.ChangePasswordAsync(userId, dto);
+
+        return Ok(new { message = "Password updated successfully" });
     }
 }
