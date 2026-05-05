@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using JobPortal.Application.DTOs;
+﻿using JobPortal.Application.DTOs;
+using JobPortal.Application.DTOs.Auth;
 using JobPortal.Application.Interfaces;
-using JobPortal.Domain.Entities;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
+using JobPortal.API.Hubs;
 
 namespace JobPortal.API.Controllers;
 
@@ -9,56 +11,87 @@ namespace JobPortal.API.Controllers;
 [ApiController]
 public class UserController : ControllerBase
 {
-    private readonly IUserRepository _userRepository;
-    private readonly IJwtTokenGenerator _jwtTokenGenerator;
-
-    // ✅ UPDATED CONSTRUCTOR
-    public UserController(IUserRepository userRepository, IJwtTokenGenerator jwtTokenGenerator)
+    private readonly IAuthService _authService;
+    private readonly IHubContext<NotificationHub> _hubContext;
+    public UserController(IAuthService authService, IHubContext<NotificationHub> hubContext)
     {
-        _userRepository = userRepository;
-        _jwtTokenGenerator = jwtTokenGenerator;
+        _authService = authService;
+        _hubContext = hubContext;
     }
 
-    // ✅ REGISTER API
     [HttpPost("register")]
     public async Task<IActionResult> Register(RegisterUserDto dto)
     {
-        if (string.IsNullOrEmpty(dto.Email) || string.IsNullOrEmpty(dto.Password))
-                return BadRequest(new { message = "Email and Passwords are required" });
+        var user = await _authService.RegisterAsync(dto);
 
-        var existingUser = await _userRepository.GetUserByEmailAsync(dto.Email);
-        if (existingUser != null) {
-            return BadRequest(new { message = "User already exist" });
-                }
-
-
-        var user = new User
+        return StatusCode(201, new
         {
-            Name = dto.Name,
-            Email = dto.Email,
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
-            Role = dto.Role
-        };
-
-        var result = await _userRepository.RegisterUserAsync(user);
-
-        return StatusCode(201, new {message = "User Registered Successfully", UserId = result.Id});
+            message = "User Registered Successfully",
+            userId = user.Id
+        });
     }
 
-    // ✅ LOGIN API (JWT)
     [HttpPost("login")]
     public async Task<IActionResult> Login(LoginDto dto)
     {
-        if (string.IsNullOrEmpty(dto.Email) || string.IsNullOrEmpty(dto.Password))
-            return BadRequest(new { message = "Email and Password are required" });
+        var (token, refreshToken) = await _authService.LoginAsync(dto);
 
-        var user = await _userRepository.GetUserByEmailAsync(dto.Email);
-
-        if (user == null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
-            return Unauthorized("Invalid credentials");
-
-        var token = _jwtTokenGenerator.GenerateToken(user);
+        Response.Cookies.Append("refreshToken", refreshToken, new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.None,
+            Path = "/",
+            Expires = DateTime.UtcNow.AddDays(7)
+        });
 
         return Ok(new { token });
+    }
+
+    [HttpPost("refresh")]
+    public async Task<IActionResult> RefreshToken()
+    {
+        var refreshToken = Request.Cookies["refreshToken"];
+
+        var newAccessToken = await _authService.RefreshTokenAsync(refreshToken);
+
+        return Ok(new { token = newAccessToken });
+    }
+
+    [HttpPost("logout")]
+    public async Task<IActionResult> Logout()
+    {
+        var refreshToken = Request.Cookies["refreshToken"];
+
+        await _authService.LogoutAsync(refreshToken);
+
+        Response.Cookies.Delete("refreshToken");
+
+        return Ok("Logged out successfully");
+    }
+
+    [HttpPost("forgot-password")]
+    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto dto)
+    {
+        await _authService.ForgotPasswordAsync(dto.Email);
+        return Ok("OTP sent to email");
+    }
+
+    [HttpPost("reset-password")]
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto dto)
+    {
+        await _authService.ResetPasswordAsync(dto.Email, dto.NewPassword);
+        return Ok("Password reset successful");
+    }
+
+    [HttpGet("test-notification")]
+    public async Task<IActionResult> TestNotification()
+    {
+        await _hubContext.Clients.All.SendAsync("ReceiveNotification", new
+        {
+            message = "Hello from SignalR 🚀"
+        });
+
+        return Ok("Notification sent");
     }
 }

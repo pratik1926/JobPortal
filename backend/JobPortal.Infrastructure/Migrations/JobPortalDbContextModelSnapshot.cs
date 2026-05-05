@@ -22,6 +22,74 @@ namespace JobPortal.Infrastructure.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("EmailVerification", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("Expiry")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsVerified")
+                        .HasColumnType("bit");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("EmailVerifications");
+                });
+
+            modelBuilder.Entity("JobPortal.Domain.Entities.Application", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("AppliedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CoverLetter")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("JobId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ResumeUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("SeekerId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("JobId");
+
+                    b.HasIndex("SeekerId");
+
+                    b.ToTable("Applications");
+                });
+
             modelBuilder.Entity("JobPortal.Domain.Entities.Job", b =>
                 {
                     b.Property<int>("Id")
@@ -48,6 +116,9 @@ namespace JobPortal.Infrastructure.Migrations
                     b.Property<int>("ProviderId")
                         .HasColumnType("int");
 
+                    b.Property<string>("Skills")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -59,7 +130,7 @@ namespace JobPortal.Infrastructure.Migrations
                     b.ToTable("Jobs");
                 });
 
-            modelBuilder.Entity("JobPortal.Domain.Entities.JobApplication", b =>
+            modelBuilder.Entity("JobPortal.Domain.Entities.Notification", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -67,26 +138,24 @@ namespace JobPortal.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("AppliedAt")
+                    b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("JobId")
-                        .HasColumnType("int");
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("bit");
 
-                    b.Property<int>("SeekerId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Status")
+                    b.Property<string>("Message")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("JobId");
+                    b.HasIndex("UserId");
 
-                    b.HasIndex("SeekerId");
-
-                    b.ToTable("Applications");
+                    b.ToTable("Notifications");
                 });
 
             modelBuilder.Entity("JobPortal.Domain.Entities.User", b =>
@@ -101,6 +170,12 @@ namespace JobPortal.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool>("IsBanned")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -109,6 +184,12 @@ namespace JobPortal.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("RefreshToken")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("RefreshTokenExpiryTime")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Role")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -116,20 +197,21 @@ namespace JobPortal.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Users");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 999,
+                            Email = "admin@test.com",
+                            IsBanned = false,
+                            IsDeleted = false,
+                            Name = "",
+                            PasswordHash = "$2a$11$Z0Y40z7kbZ9kldIhHNHGhOGkeXgXENbTwv1oAVoKbHMp0ANEYzNB.",
+                            Role = "Admin"
+                        });
                 });
 
-            modelBuilder.Entity("JobPortal.Domain.Entities.Job", b =>
-                {
-                    b.HasOne("JobPortal.Domain.Entities.User", "Provider")
-                        .WithMany("Jobs")
-                        .HasForeignKey("ProviderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Provider");
-                });
-
-            modelBuilder.Entity("JobPortal.Domain.Entities.JobApplication", b =>
+            modelBuilder.Entity("JobPortal.Domain.Entities.Application", b =>
                 {
                     b.HasOne("JobPortal.Domain.Entities.Job", "Job")
                         .WithMany("Application")
@@ -146,6 +228,28 @@ namespace JobPortal.Infrastructure.Migrations
                     b.Navigation("Job");
 
                     b.Navigation("Seeker");
+                });
+
+            modelBuilder.Entity("JobPortal.Domain.Entities.Job", b =>
+                {
+                    b.HasOne("JobPortal.Domain.Entities.User", "Provider")
+                        .WithMany("Jobs")
+                        .HasForeignKey("ProviderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Provider");
+                });
+
+            modelBuilder.Entity("JobPortal.Domain.Entities.Notification", b =>
+                {
+                    b.HasOne("JobPortal.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("JobPortal.Domain.Entities.Job", b =>

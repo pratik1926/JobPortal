@@ -1,8 +1,10 @@
 ﻿using JobPortal.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using JobPortal.Application.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
+using JobPortal.API.DTOs;
+using JobPortal.Application.DTOs;
+using JobPortal.Application.Exceptions;
 
 namespace JobPortal.API.Controllers
 {
@@ -13,149 +15,253 @@ namespace JobPortal.API.Controllers
         private readonly IJobService _jobService;
         private readonly IApplicationService _applicationService;
 
-        public JobController(IJobService jobService, IApplicationService applicationService)
+        public JobController(
+            IJobService jobService,
+            IApplicationService applicationService)
         {
             _jobService = jobService;
             _applicationService = applicationService;
         }
 
-        // 🔹 GET ALL JOBS
-        [HttpGet]
-        public async Task<IActionResult> GetJobs()
+        private int? GetUserId()
         {
-            var jobs = await _jobService.GetAllJobsAsync();
-            return Ok(jobs);
+            var claim = User.Claims.FirstOrDefault(c =>
+                c.Type == ClaimTypes.NameIdentifier ||
+                c.Type.Contains("nameidentifier"));
+
+            return int.TryParse(claim?.Value, out int id) ? id : null;
         }
 
-        // 🔹 CREATE JOB (PROVIDER)
+        // 🔹 GET ALL JOBS (PAGINATED)
+        [HttpGet]
+        public async Task<IActionResult> GetJobs(int page = 1, int pageSize = 10)
+        {
+            pageSize = Math.Min(pageSize, 50);
+
+            var (jobs, total) = await _jobService.GetPagedJobsAsync(page, pageSize);
+
+            return Ok(new
+            {
+                data = jobs,
+                total,
+                page,
+                pageSize
+            });
+        }
+
+        // 🔹 CREATE JOB
         [HttpPost]
         [Authorize(Roles = "Provider")]
-        public async Task<IActionResult> CreateJob(CreateJobDto dto)
+        public async Task<IActionResult> CreateJob([FromBody] CreateJobDto dto)
         {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var providerId = GetUserId();
+            if (dto == null)
+                throw new BadRequestException("Invalid request payload");
+            var userId = GetUserId();
 
             if (userId == null)
                 return Unauthorized();
 
-            await _jobService.CreateJobAsync(dto, int.Parse(userId));
+            await _jobService.CreateJobAsync(dto, userId.Value);
 
             return Ok(new { message = "Job Created Successfully" });
         }
 
-        // 🔹 APPLY TO JOB (SEEKER)
+        // 🔹 APPLY TO JOB
         [HttpPost("apply/{jobId}")]
         [Authorize(Roles = "Seeker")]
-        public async Task<IActionResult> ApplyToJob(int jobId)
+        public async Task<IActionResult> ApplyToJob(int jobId, [FromForm] ApplyJobRequest request)
         {
-            try
-            {
-                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-                if (userId == null)
-                    return Unauthorized();
-
-                await _applicationService.ApplyToJobAsync(jobId, int.Parse(userId));
-
-                return Ok(new { message = "Applied successfully" });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
-        }
-
-        // 🔹 GET MY APPLICATIONS (SEEKER)
-        [HttpGet("my-applications")]
-        [Authorize(Roles = "Seeker")]
-        public async Task<IActionResult> GetMyApplications()
-        {
-            try
-            {
-                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-                if (userId == null)
-                    return Unauthorized();
-
-                var applications = await _applicationService.GetMyApplicationsAsync(int.Parse(userId));
-
-                var result = applications.Select(a => new ApplicationResponseDto
-                {
-                    Id = a.Id,
-                    Status = a.Status,
-                    AppliedAt = a.AppliedAt,
-                    JobTitle = a.Job.Title,
-                    Budget = a.Job.Budget,
-                    Location = a.Job.Location
-                });
-
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
-        }
-
-        // 🔹 GET APPLICATIONS FOR PROVIDER
-        [HttpGet("applications")]
-        [Authorize(Roles = "Provider")]
-        public async Task<IActionResult> GetApplicationsForMyJobs()
-        {
-            try
-            {
-                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-                if (userId == null)
-                    return Unauthorized();
-
-                var applications = await _applicationService
-                    .GetApplicationsForProviderAsync(int.Parse(userId));
-
-                var result = applications.Select(a => new ApplicationProviderDto
-                {
-                    Id = a.Id,
-                    SeekerEmail = a.Seeker.Email,
-                    JobTitle = a.Job.Title,
-                    Status = a.Status,
-                    AppliedAt = a.AppliedAt
-                });
-
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
-        }
-
-        // 🔥 UPDATE APPLICATION STATUS (PROVIDER - WITH OWNERSHIP VALIDATION)
-        [HttpPut("applications/{applicationId}/status")]
-        [Authorize(Roles = "Provider")]
-        public async Task<IActionResult> UpdateApplicationStatus(int applicationId, [FromBody] string status)
-        {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userId = GetUserId();
 
             if (userId == null)
                 return Unauthorized();
 
-            try
+            if (request.Resume == null || request.Resume.Length == 0)
+                throw new BadRequestException("Resume is required");
+
+            using var ms = new MemoryStream();
+            await request.Resume.CopyToAsync(ms);
+
+            var dto = new ApplyJobDto
             {
-                await _applicationService.UpdateApplicationStatusAsync(
-                    applicationId,
-                    status,
-                    int.Parse(userId)
+                Resume = ms.ToArray(),
+                FileName = request.Resume.FileName,
+                CoverLetter = request.CoverLetter
+            };
+
+            await _applicationService.ApplyToJobAsync(jobId, userId.Value, dto);
+
+            return Ok(new { message = "Applied successfully" });
+        }
+
+        // 🔥 GET MY JOBS (PAGINATED)
+        [HttpGet("my-jobs")]
+        [Authorize(Roles = "Provider")]
+        public async Task<IActionResult> GetMyJobs(int page = 1, int pageSize = 10)
+        {
+            var userId = GetUserId();
+
+            if (userId == null)
+                return Unauthorized();
+
+            pageSize = Math.Min(pageSize, 50);
+
+            var (jobs, total) =
+                await _jobService.GetPagedJobsByProviderAsync(userId.Value, page, pageSize);
+
+            return Ok(new
+            {
+                data = jobs,
+                total,
+                page,
+                pageSize
+            });
+        }
+
+        //// 🔹 GET MY APPLICATIONS
+        //[HttpGet("my-applications")]
+        //[Authorize(Roles = "Seeker")]
+        //public async Task<IActionResult> GetMyApplications()
+        //{
+        //    var userId = GetUserId();
+
+        //    if (userId == null)
+        //        return Unauthorized();
+
+        //    var applications = await _applicationService.GetMyApplicationsAsync(userId.Value);
+
+        //    return Ok(applications);
+        //}
+
+        [HttpGet("my-applications")]
+        [Authorize(Roles = "Seeker")]
+        public async Task<IActionResult> GetMyApplications(int page = 1, int pageSize = 10)
+        {
+            var userId = GetUserId();
+
+            if (userId == null)
+                return Unauthorized();
+
+            pageSize = Math.Min(pageSize, 50);
+
+            var (applications, total) =
+                await _applicationService.GetPagedApplicationsForSeekerAsync(
+                    userId.Value,
+                    page,
+                    pageSize
                 );
 
-                return Ok(new { message = "Application status updated successfully" });
-            }
-            catch (UnauthorizedAccessException ex)
+            return Ok(new
             {
-                return Forbid(ex.Message); // 🔥 correct
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
+                data = applications,
+                total,
+                page,
+                pageSize
+            });
         }
+
+
+
+
+
+        [HttpGet("applications")]
+        [Authorize(Roles = "Provider")]
+        public async Task<IActionResult> GetApplicationsForMyJobs(int page = 1, int pageSize = 10)
+        {
+            var userId = GetUserId();
+
+            if (userId == null)
+                return Unauthorized();
+
+            pageSize = Math.Min(pageSize, 50);
+
+            var (applications, total) =
+                await _applicationService.GetPagedApplicationsForProviderAsync(
+                    userId.Value,
+                    page,
+                    pageSize
+                );
+
+            return Ok(new
+            {
+                data = applications,
+                total,
+                page,
+                pageSize
+            });
+        }
+
+        // 🔹 UPDATE JOB
+        [HttpPut("{id}")]
+        [Authorize(Roles = "Provider")]
+        public async Task<IActionResult> UpdateJob(int id, UpdateJobDto dto)
+        {
+            var userId = GetUserId();
+
+            if (userId == null)
+                return Unauthorized();
+
+            await _jobService.UpdateJobAsync(id, dto, userId.Value);
+
+            return Ok(new { message = "Job updated successfully" });
+        }
+
+        [HttpPut("applications/{id}/status")]
+        [Authorize(Roles = "Provider")]
+        public async Task<IActionResult> UpdateApplicationStatus(int id, [FromBody] UpdateStatusDto dto)
+        {
+            var userId = GetUserId();
+
+            if (userId == null)
+                return Unauthorized();
+
+            await _applicationService.UpdateApplicationStatusAsync(
+                id,
+                dto.Status,
+                userId.Value
+            );
+
+            return Ok(new { message = "Application status updated successfully" });
+        }
+
+
+
+        // 🔹 DELETE JOB
+        [HttpDelete("{id}")]
+        [Authorize(Roles = "Provider")]
+        public async Task<IActionResult> DeleteJob(int id)
+        {
+            var userId = GetUserId();
+
+            if (userId == null)
+                return Unauthorized();
+
+            await _jobService.DeleteJobAsync(id, userId.Value);
+
+            return Ok(new { message = "Job deleted successfully" });
+        }
+
+        [HttpPost("bulk")]
+        [Authorize(Roles = "Provider")]
+        public async Task<IActionResult> BulkCreateJobs([FromBody]List<CreateJobDto> jobs)
+        {
+
+            var userId = GetUserId();
+            if (jobs == null || !jobs.Any())
+                throw new BadRequestException("No jobs provided");
+
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+
+            if (userIdClaim == null)
+                return Unauthorized();
+
+            var providerId = int.Parse(userIdClaim.Value);
+
+            var result = await _jobService.BulkCreateAsync(jobs, providerId);
+
+            return Ok(result);
+        }
+
     }
 }

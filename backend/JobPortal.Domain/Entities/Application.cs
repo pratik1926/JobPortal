@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace JobPortal.Domain.Entities
 {
-    public class JobApplication
+    public class Application
     {
         public int Id { get; set; }
         public int JobId { get; set; }
@@ -17,6 +17,10 @@ namespace JobPortal.Domain.Entities
         //Navigation
         public Job Job { get; set; }
         public User Seeker { get; set; }
+
+        public string ResumeUrl {  get; set; } = string.Empty;
+        public string CoverLetter {  get; set; }
+
     }
 
 }

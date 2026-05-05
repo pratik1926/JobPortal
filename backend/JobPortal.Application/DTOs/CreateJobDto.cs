@@ -6,5 +6,6 @@ public class CreateJobDto
     public string Description { get; set; } = string.Empty;
     public decimal Budget { get; set; }
     public string Location { get; set; } = string.Empty;
-    public int ProviderId { get; set; }
+    //public int ProviderId { get; set; }
+    public string? Skills { get; set; }
 }
