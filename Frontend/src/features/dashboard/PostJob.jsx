@@ -156,10 +156,11 @@ export default function PostJob({ onJobCreated }) {
         skills: ""
       });
 
-      // refresh parent (dashboard)
+      // // refresh parent (dashboard)
       onJobCreated && onJobCreated();
 
     } catch (err) {
+      
       console.error(err);
       toast.error("Failed to post job");
     }
@@ -191,11 +192,14 @@ export default function PostJob({ onJobCreated }) {
             dataField="budget"
             editorType="dxNumberBox"
             editorOptions={{
-              min: 0,
-              showSpinButtons: true
+              
+              showSpinButtons: true,
+              format: "#,##0",
+              RequiredRule:"asd",
+              
             }}
           >
-            <RequiredRule message="Budget is required" />
+            {/* <RequiredRule message="Budget is required" /> */}
           </Item>
 
           {/* LOCATION */}

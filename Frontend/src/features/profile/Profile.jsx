@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import axiosClient from "../../api/axiosClient";
+import { AuthContext } from "../../context/AuthContext";
 
 export default function Profile() {
   const [user, setUser] = useState(null);
@@ -9,6 +10,8 @@ export default function Profile() {
 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+
+  const {logout} = useContext(AuthContext);
 
   // 🔹 Fetch profile
   useEffect(() => {
@@ -35,9 +38,15 @@ export default function Profile() {
         newPassword,
       });
 
-      setMessage("✅ Password updated successfully");
+      alert("✅ Password updated successfully");
       setCurrentPassword("");
       setNewPassword("");
+
+      // ✅ Proper logout
+    logout();
+
+    // ✅ Redirect
+    navigate("/login", { replace: true });
     } catch (err) {
       setMessage(
         err.response?.data?.message ||
