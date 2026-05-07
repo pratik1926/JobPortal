@@ -166,6 +166,14 @@ import { AuthContext }
 import NotificationBell
   from "../features/notifications/NotificationBell";
 
+import {
+  LayoutDashboard,
+  FileText,
+  User,
+  Settings,
+  LogOut
+} from "lucide-react";
+
 export default function ProviderLayout() {
 
   const navigate =
