@@ -50,23 +50,44 @@ public class JobPortalDbContext : DbContext
 
     public DbSet<Notification> Notifications { get; set; }
     public DbSet<EmailVerification> EmailVerifications { get; set; }
+
+    public DbSet<Report> Reports { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
-        // 🔥 FIX: Prevent multiple cascade delete paths
+        //Prevent multiple cascade delete paths
         modelBuilder.Entity<Domain.Entities.Application>()
             .HasOne(a => a.Seeker)
             .WithMany(u => u.Applications)
             .HasForeignKey(a => a.SeekerId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // ✅ Budget precision
+        //Budget precision
         modelBuilder.Entity<Job>()
             .Property(j => j.Budget)
             .HasPrecision(18, 2);
 
-        // 🔥 ADMIN SEEDING (USING BCRYPT)
+        // Configure Report relationships
+        modelBuilder.Entity<Report>()
+            .HasOne(r => r.Reporter)
+            .WithMany()
+            .HasForeignKey(r => r.ReporterId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Report>()
+            .HasOne(r => r.ReportedUser)
+            .WithMany()
+            .HasForeignKey(r => r.ReportedUserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Report>()
+            .HasOne(r => r.Application)
+            .WithMany()
+            .HasForeignKey(r => r.ApplicationId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        //ADMIN SEEDING (USING BCRYPT)
 
         var admin = new User
         {

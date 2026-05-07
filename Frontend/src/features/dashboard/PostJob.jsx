@@ -154,20 +154,21 @@ export default function PostJob({ onJobCreated }) {
       await createJob(job);
 
       toast.success("Job posted successfully");
+      validationEngine.resetGroup("jobForm");
 
-      // reset form
-      setJob({
-        title: "",
-        description: "",
-        budget: null,
-        location: "",
-        skills: ""
-      });
+      // // reset form
+      // setJob({
+      //   title: "",
+      //   description: "",
+      //   budget: null,
+      //   location: "",
+      //   skills: ""
+      // });
 
       // // refresh parent (dashboard)
       onJobCreated && onJobCreated();
 
-      validationEngine.resetGroup("jobForm");
+      
 
     } catch (err) {
       
