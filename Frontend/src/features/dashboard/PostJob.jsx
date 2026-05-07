@@ -130,6 +130,7 @@ import Form, {
 import { Button } from "devextreme-react/button";
 import { createJob } from "../../api/jobApi";
 import toast from "react-hot-toast";
+import validationEngine from "devextreme/ui/validation_engine";
 
 export default function PostJob({ onJobCreated }) {
   const [job, setJob] = useState({
@@ -142,6 +143,13 @@ export default function PostJob({ onJobCreated }) {
 
   // 🔥 HANDLE SUBMIT
   const handleSubmit = async () => {
+
+    const result = validationEngine.validateGroup("jobForm");
+
+    if (!result.isValid) {
+      toast.error("Please fill required details with valid data");
+      return;
+    }
     try {
       await createJob(job);
 
@@ -159,6 +167,8 @@ export default function PostJob({ onJobCreated }) {
       // // refresh parent (dashboard)
       onJobCreated && onJobCreated();
 
+      validationEngine.resetGroup("jobForm");
+
     } catch (err) {
       
       console.error(err);
@@ -173,6 +183,8 @@ export default function PostJob({ onJobCreated }) {
       <Form
         formData={job}
         colCount={2}
+        validationGroup = "jobForm"
+        showValidatoinSummary={false}
         onFieldDataChanged={(e) => {
           setJob((prev) => ({
             ...prev,
