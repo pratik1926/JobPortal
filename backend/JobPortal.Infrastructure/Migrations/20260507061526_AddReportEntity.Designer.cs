@@ -4,6 +4,7 @@ using JobPortal.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace JobPortal.Infrastructure.Migrations
 {
     [DbContext(typeof(JobPortalDbContext))]
-    partial class JobPortalDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260507061526_AddReportEntity")]
+    partial class AddReportEntity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -166,9 +169,6 @@ namespace JobPortal.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("AdminNotes")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<int>("ApplicationId")
                         .HasColumnType("int");
 
@@ -189,12 +189,6 @@ namespace JobPortal.Infrastructure.Migrations
                         .HasColumnType("int");
 
                     b.Property<int>("ReporterId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("ReviewedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("ReviewedByAdminId")
                         .HasColumnType("int");
 
                     b.Property<string>("Status")
@@ -260,7 +254,7 @@ namespace JobPortal.Infrastructure.Migrations
                             IsBanned = false,
                             IsDeleted = false,
                             Name = "",
-                            PasswordHash = "$2a$11$/ZAMaORWJYj9B9lawCHaQeMc0An/ObjLWVLy4NAJwXmD..UUmVW0W",
+                            PasswordHash = "$2a$11$aHzNKE4ZSttzJAVuMuifk.SsUjtdHtekd0hrTk/xftZZGM4MTZtq2",
                             Role = "Admin"
                         });
                 });

@@ -130,6 +130,7 @@ import Form, {
 import { Button } from "devextreme-react/button";
 import { createJob } from "../../api/jobApi";
 import toast from "react-hot-toast";
+import validationEngine from "devextreme/ui/validation_engine";
 
 export default function PostJob({ onJobCreated }) {
   const [job, setJob] = useState({
@@ -142,24 +143,35 @@ export default function PostJob({ onJobCreated }) {
 
   // 🔥 HANDLE SUBMIT
   const handleSubmit = async () => {
+
+    const result = validationEngine.validateGroup("jobForm");
+
+    if (!result.isValid) {
+      toast.error("Please fill required details with valid data");
+      return;
+    }
     try {
       await createJob(job);
 
       toast.success("Job posted successfully");
+      validationEngine.resetGroup("jobForm");
 
-      // reset form
-      setJob({
-        title: "",
-        description: "",
-        budget: null,
-        location: "",
-        skills: ""
-      });
+      // // reset form
+      // setJob({
+      //   title: "",
+      //   description: "",
+      //   budget: null,
+      //   location: "",
+      //   skills: ""
+      // });
 
-      // refresh parent (dashboard)
+      // // refresh parent (dashboard)
       onJobCreated && onJobCreated();
 
+      
+
     } catch (err) {
+      
       console.error(err);
       toast.error("Failed to post job");
     }
@@ -172,6 +184,8 @@ export default function PostJob({ onJobCreated }) {
       <Form
         formData={job}
         colCount={2}
+        validationGroup = "jobForm"
+        showValidatoinSummary={false}
         onFieldDataChanged={(e) => {
           setJob((prev) => ({
             ...prev,
@@ -191,11 +205,14 @@ export default function PostJob({ onJobCreated }) {
             dataField="budget"
             editorType="dxNumberBox"
             editorOptions={{
-              min: 0,
-              showSpinButtons: true
+              
+              showSpinButtons: true,
+              format: "#,##0",
+              RequiredRule:"asd",
+              
             }}
           >
-            <RequiredRule message="Budget is required" />
+            {/* <RequiredRule message="Budget is required" /> */}
           </Item>
 
           {/* LOCATION */}

@@ -28,7 +28,8 @@ import AdminDashboard from "./pages/Admin/AdminDashboard";
 import AdminUsers from "./pages/Admin/AdminUsers";
 import AdminJobs from "./pages/Admin/AdminJobs";
 
-
+import AdminReports from "./pages/Admin/AdminReports";
+import ProviderReports from "./pages/provider/ProviderReport";
 
 import Profile from "./features/profile/Profile";
 
@@ -58,6 +59,7 @@ function App() {
           <Route index element={<AdminDashboard />} />
           <Route path="users" element={<AdminUsers />} />
           <Route path="jobs" element={<AdminJobs />} />
+          <Route path="reports" element={<AdminReports />} />
         </Route>
 
         {/* 🔒 PROVIDER ROUTES */}
@@ -70,6 +72,8 @@ function App() {
         >
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/applications" element={<ApplicationsPage />} />
+          <Route path="/provider/reports" 
+                element={<ProviderReports />} />
 
           {/* 🔥 COMMON (Provider) */}
           <Route path="/provider/profile" element={<Profile />} />

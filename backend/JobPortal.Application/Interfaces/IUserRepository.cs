@@ -9,6 +9,7 @@ namespace JobPortal.Application.Interfaces
 {
     public interface IUserRepository
     {
+        Task<IEnumerable<User>> GetAdminsAsync();
         Task<User> RegisterUserAsync(User user);
         Task<User?> GetUserByEmailAsync(string email);
         Task<User?> GetUserByRefreshTokenAsync(string refreshToken);

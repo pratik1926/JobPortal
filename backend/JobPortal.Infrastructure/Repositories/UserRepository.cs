@@ -103,4 +103,11 @@ public class UserRepository : IUserRepository
 
         return (users, total);
     }
+
+    public async Task<IEnumerable<User>> GetAdminsAsync()
+    {
+        return await _context.Users
+            .Where(u => u.Role == "Admin")
+            .ToListAsync();
+    }
 }

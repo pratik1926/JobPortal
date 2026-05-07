@@ -16,7 +16,7 @@
 // }
 
 import api from "./axios";
-
+import axiosClient from "./axiosClient";
 // 👥 USERS
 // export const getAllUsers = () => api.get("/Admin/users");
 
@@ -40,3 +40,15 @@ export const getAllJobsAdmin = (page, pageSize) =>
 
 export const getAnalytics = () => 
   api.get("/Admin/analytics");
+
+export const getAllReports = () =>
+  axiosClient.get("/report");
+
+export const reviewReport = (id, payload) =>
+  axiosClient.patch(`/report/${id}/review`, payload);
+
+export const rejectReport = (id, payload) =>
+  axiosClient.patch(`/report/${id}/reject`, payload);
+
+export const resolveReport = (id, payload) =>
+  axiosClient.patch(`/report/${id}/resolve`, payload);

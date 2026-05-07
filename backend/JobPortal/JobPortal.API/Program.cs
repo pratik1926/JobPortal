@@ -26,7 +26,7 @@ namespace JobPortal.API
         public static void Main(string[] args)
         {
 
-            // 🔥 STEP 1 — Configure Serilog FIRST
+            //Configure Serilog 
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Information()
                 .Enrich.FromLogContext()
@@ -36,7 +36,7 @@ namespace JobPortal.API
 
             var builder = WebApplication.CreateBuilder(args);
 
-            // 🔥 STEP 2 — Replace default logger
+            // Replace default logger
             builder.Host.UseSerilog();
 
             // Add services to the container.
@@ -93,6 +93,11 @@ namespace JobPortal.API
 
             builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddScoped<IUserService, UserService>();
+
+            // NEW: Report repository + service
+            builder.Services.AddScoped<IReportRepository, ReportRepository>();
+            builder.Services.AddScoped<IReportService, ReportService>();
+
 
             var key = Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]);
 
