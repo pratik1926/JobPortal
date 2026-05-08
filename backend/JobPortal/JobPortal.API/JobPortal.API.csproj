@@ -4,7 +4,14 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+	<PreserveCompilationContext>true</PreserveCompilationContext>  
+	  
   </PropertyGroup>
+
+  <ItemGroup>
+    <Content Remove="Infrastructure\Email\Templates\JobApplicationNotification.cshtml" />
+    <Content Remove="Infrastructure\Email\Templates\OtpVerification.cshtml" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="BCrypt.NET-Next" Version="4.1.0" />
@@ -28,6 +35,11 @@
 
   <ItemGroup>
     <Folder Include="wwwroot\resumes\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Infrastructure\Email\Templates\JobApplicationNotification.cshtml" />
+    <None Include="Infrastructure\Email\Templates\OtpVerification.cshtml" />
   </ItemGroup>
 
 </Project>

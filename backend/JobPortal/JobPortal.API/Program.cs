@@ -1,23 +1,24 @@
-﻿using JobPortal.Infrastructure.Persistence;
-using Microsoft.EntityFrameworkCore;
-using JobPortal.Application.Interfaces;
-using JobPortal.Infrastructure.Repositories;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
-using Microsoft.OpenApi.Models;
-using JobPortal.Application.Services;
-using JobPortal.Infrastructure.Services;
-using FluentValidation;
+﻿using FluentValidation;
 using FluentValidation.AspNetCore;
-using Serilog;
-using JobPortal.Application.Validators;
 using JobPortal.API.Hubs;
-using JobPortal.API.Services;
 using JobPortal.API.Infrastructure;
-using Microsoft.AspNetCore.SignalR;
 using JobPortal.API.Middleware;
+using JobPortal.API.Services;
+using JobPortal.Application.Interfaces;
+using JobPortal.Application.Services;
+using JobPortal.Application.Settings;
+using JobPortal.Application.Validators;
+using JobPortal.Infrastructure.Persistence;
+using JobPortal.Infrastructure.Repositories;
+using JobPortal.Infrastructure.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+using Serilog;
+using System.Text;
 
 namespace JobPortal.API
 {
@@ -167,7 +168,12 @@ namespace JobPortal.API
 
             builder.Services.AddScoped<IVerificationService, VerificationService>();
 
-            builder.Services.AddScoped<IEmailService, EmailService>();
+            builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+            builder.Services.AddSingleton<IEmailTemplateRenderer, EmailTemplateRenderer>();
+            builder.Services.AddTransient<ISmtpEmailProvider, SmtpEmailProvider>();
+            builder.Services.AddSingleton<IEmailService, EmailService>();
+
+            //builder.Services.AddScoped<IEmailService, EmailService>();
             builder.Services.AddScoped<IEmailVerificationRepository, EmailVerificationRepository>();
 
             builder.Services.AddSignalR();

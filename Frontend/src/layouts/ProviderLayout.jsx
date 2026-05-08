@@ -1,5 +1,13 @@
-import { Link, Outlet, useNavigate } from "react-router-dom";
-import { useContext } from "react";
+import { Link, Outlet, useNavigate, useLocation } from "react-router-dom";
+import { useContext, useState } from "react";
+import {
+LayoutDashboard,
+FileText,
+ShieldAlert,
+User,
+Settings,
+LogOut
+} from "lucide-react";
 import { AuthContext } from "../context/AuthContext";
 import NotificationBell from "../features/notifications/NotificationBell";
 
