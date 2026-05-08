@@ -52,6 +52,8 @@ public class JobPortalDbContext : DbContext
     public DbSet<EmailVerification> EmailVerifications { get; set; }
 
     public DbSet<Report> Reports { get; set; }
+
+    public DbSet<ProviderRestriction> ProviderRestrictions { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -86,6 +88,36 @@ public class JobPortalDbContext : DbContext
             .WithMany()
             .HasForeignKey(r => r.ApplicationId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<ProviderRestriction>(b =>
+        {
+            b.ToTable("ProviderRestrictions");
+
+            b.HasKey(x => x.Id);
+
+            b.Property(x => x.CreatedAtUtc)
+                .HasDefaultValueSql("GETUTCDATE()");
+
+            b.HasIndex(x => new { x.ProviderId, x.SeekerId })
+                .IsUnique()
+                .HasDatabaseName("IX_ProviderRestriction_Provider_Seeker");
+
+            // foreign keys (restrict deletes to avoid cascading deletes)
+            b.HasOne(x => x.Provider)
+                .WithMany()
+                .HasForeignKey(x => x.ProviderId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            b.HasOne(x => x.Seeker)
+                .WithMany()
+                .HasForeignKey(x => x.SeekerId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            b.HasOne(x => x.Report)
+                .WithMany()
+                .HasForeignKey(x => x.ReportId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
 
         //ADMIN SEEDING (USING BCRYPT)
 

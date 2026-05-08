@@ -121,10 +121,12 @@ namespace JobPortal.Application.Services
     public class JobService : IJobService
     {
         private readonly IJobRepository _jobRepository;
+        private readonly IProviderRestrictionService _restrictionService;
 
-        public JobService(IJobRepository jobRepository)
+        public JobService(IJobRepository jobRepository, IProviderRestrictionService restrictionService)
         {
             _jobRepository = jobRepository;
+            _restrictionService = restrictionService;
         }
 
         public async Task<IEnumerable<JobDto>> GetAllJobsAsync()
@@ -190,15 +192,48 @@ namespace JobPortal.Application.Services
             await _jobRepository.DeleteJobAsync(jobId);
         }
 
-        public async Task<Job> GetJobByIdAsync(int jobId)
+        //public async Task<Job> GetJobByIdAsync(int jobId)
+        //{
+        //    return await _jobRepository.GetJobByIdAsync(jobId);
+        //}
+
+        public async Task<Job> GetJobByIdAsync(int jobId, int? requesterSeekerId = null)
         {
-            return await _jobRepository.GetJobByIdAsync(jobId);
+            var job = await _jobRepository.GetJobByIdAsync(jobId);
+            if (job == null) throw new NotFoundException("Job not found");
+
+            if (requesterSeekerId.HasValue)
+            {
+                var restricted = await _restrictionService.IsSeekerRestrictedForProviderAsync(requesterSeekerId.Value, job.ProviderId);
+                if (restricted)
+                    throw new UnauthorizedAccessException("You are restricted from interacting with this provider.");
+                // Alternatively throw custom ForbiddenException handled by your middleware
+            }
+            return job;
         }
 
         // 🔥 PAGINATED (USER)
-        public async Task<(List<JobDto> jobs, int total)> GetPagedJobsAsync(int page, int pageSize)
+        //public async Task<(List<JobDto> jobs, int total)> GetPagedJobsAsync(int page, int pageSize)
+        //{
+        //    var (jobs, total) = await _jobRepository.GetPagedJobsAsync(page, pageSize);
+        //    return (jobs.Select(MapToDto).ToList(), total);
+        //}
+
+        public async Task<(List<JobDto> jobs, int total)> GetPagedJobsAsync(int page, int pageSize, int? seekerId = null)
         {
             var (jobs, total) = await _jobRepository.GetPagedJobsAsync(page, pageSize);
+
+            // if caller is a seeker, filter providers based on restrictions (efficient for most cases)
+            if (seekerId.HasValue)
+            {
+                var restrictedProviders = (await _restrictionService.GetRestrictedProviderIdsForSeekerAsync(seekerId.Value)).ToHashSet();
+                if (restrictedProviders.Any())
+                {
+                    jobs = jobs.Where(j => !restrictedProviders.Contains(j.ProviderId)).ToList();
+                    total = jobs.Count; // if repository returned full page, recalc if necessary or adjust repo query to accept exclude list
+                }
+            }
+
             return (jobs.Select(MapToDto).ToList(), total);
         }
 

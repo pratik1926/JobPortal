@@ -1,9 +1,10 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using JobPortal.API.Hubs;
 using JobPortal.Application.Interfaces;
-using JobPortal.API.Hubs;
-using Microsoft.AspNetCore.SignalR;
 using JobPortal.Application.Services;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
+using System.Security.Claims;
 
 namespace JobPortal.API.Controllers
 {
@@ -16,10 +17,12 @@ namespace JobPortal.API.Controllers
         private readonly IJobService _jobService;
         private readonly IAdminService _adminService;
         private readonly IHubContext<NotificationHub> _hubContext;
+        private readonly IProviderRestrictionService _restrictionService;
         public AdminController(IUserService userService,
             IJobService jobService,
             IAdminService adminService,
-            IHubContext<NotificationHub> hubContext)
+            IHubContext<NotificationHub> hubContext,
+            IProviderRestrictionService restrictionService)
 
         {
 
@@ -27,6 +30,7 @@ namespace JobPortal.API.Controllers
             _jobService = jobService;
             _adminService = adminService;
             _hubContext = hubContext;
+            _restrictionService = restrictionService;
         }
 
        
@@ -119,6 +123,15 @@ namespace JobPortal.API.Controllers
             return Ok(data);
         }
 
+        // New endpoint
+        [HttpPost("reports/{reportId}/restrict")]
+        public async Task<IActionResult> RestrictSeekerByReport(int reportId)
+        {
+            var adminId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+            var result = await _restrictionService.CreateFromReportAsync(reportId, adminId);
+
+            return Ok(new { data = result, message = "Provider restriction created (or already existed)." });
+        }
 
     }
 }

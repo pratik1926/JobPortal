@@ -14,6 +14,18 @@ namespace JobPortal.Infrastructure.Repositories
             _context = context;
         }
 
+        public async Task<Report?> GetByIdAsync(int id)
+        {
+            return await _context.Reports
+                .AsNoTracking()
+                .FirstOrDefaultAsync(r => r.Id == id);
+        }
+
+        public async Task SaveChangesAsync()
+        {
+            await _context.SaveChangesAsync();
+        }
+
         public async Task<Report> CreateReportAsync(Report report)
         {
             await _context.Reports.AddAsync(report);
