@@ -17,7 +17,7 @@ export default function SeekerDashboard() {
     <div className="space-y-4">
 
       <div>
-        <h1 className="text-2xl font-bold">Browse Jobs</h1>
+        {/* <h1 className="text-2xl font-bold">Browse Jobs</h1> */}
         <p className="text-sm text-slate-500">
           Find jobs that match your skills
         </p>
