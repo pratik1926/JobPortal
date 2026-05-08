@@ -39,11 +39,19 @@ namespace JobPortal.Application.Services
             await _repository.AddAsync(verification);
             await _repository.SaveChangesAsync();
 
-            // ✅ send email
-            await _emailService.SendEmailAsync(
+            //// ✅ send email
+            //await _emailService.SendEmailAsync(
+            //    email,
+            //    "Your Verification Code",
+            //    $"Your OTP is: <b>{code}</b>"
+            //);
+
+            await _emailService.SendTemplateAsync(
+                email,
                 email,
                 "Your Verification Code",
-                $"Your OTP is: <b>{code}</b>"
+                "OtpVerification",
+                new { Code = code }
             );
         }
 
