@@ -183,6 +183,10 @@ namespace JobPortal.API
             builder.Services.AddSingleton<IUserIdProvider, SignalRUserIdProvider>();
 
             builder.Services.AddScoped<IAdminService, AdminService>();
+
+            builder.Services.AddScoped<IProviderRestrictionRepository, ProviderRestrictionRepository>();
+            builder.Services.AddScoped<IProviderRestrictionService, ProviderRestrictionService>();
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.

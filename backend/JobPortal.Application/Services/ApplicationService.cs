@@ -502,6 +502,7 @@ namespace JobPortal.Application.Services
         private readonly IEmailService _emailService;
         private readonly IEmailTemplateRenderer _templateRenderer;
         private readonly ILogger<ApplicationService> _logger;
+        private readonly IProviderRestrictionService _restrictionService;
 
         // ✅ ONLY repository injection (clean architecture)
         public ApplicationService(
@@ -511,16 +512,18 @@ namespace JobPortal.Application.Services
             IUserRepository userRepository,
             IEmailService emailService,
             IEmailTemplateRenderer templateRenderer,
+            IProviderRestrictionService restrictionService,
             ILogger<ApplicationService> logger)
         {
             _jobRepository = jobRepository;
-            _file_service_check(jobRepository, fileService, notificationService, userRepository, emailService, templateRenderer, logger);
+            _file_service_check(jobRepository, fileService, notificationService, userRepository, emailService, templateRenderer, restrictionService, logger);
 
             _fileService = fileService;
             _notificationService = notificationService;
             _userRepository = userRepository;
             _emailService = emailService;
             _templateRenderer = templateRenderer;
+            _restrictionService = restrictionService;
             _logger = logger;
         }
 
@@ -532,6 +535,7 @@ namespace JobPortal.Application.Services
             IUserRepository userRepository,
             IEmailService emailService,
             IEmailTemplateRenderer templateRenderer,
+            IProviderRestrictionService restrictionService,
             ILogger<ApplicationService> logger)
         {
             // no-op; method exists only to keep constructor assignments consistent in one place
@@ -540,6 +544,13 @@ namespace JobPortal.Application.Services
         // 🔥 APPLY TO JOB (CLEAN + CORRECT)
         public async Task ApplyToJobAsync(int jobId, int seekerId, ApplyJobDto dto)
         {
+            var job = await _jobRepository.GetJobByIdAsync(jobId);
+            if (job == null) throw new NotFoundException("Job not found");
+
+            var isRestricted = await _restrictionService.IsSeekerRestrictedForProviderAsync(seekerId, job.ProviderId);
+            if (isRestricted)
+                throw new UnauthorizedAccessException("You are restricted from interacting with this provider.");
+
             // 🔒 Prevent duplicate application
             var alreadyApplied = await _jobRepository.HasUserApplied(jobId, seekerId);
             if (alreadyApplied)
@@ -569,13 +580,13 @@ namespace JobPortal.Application.Services
 
             await _jobRepository.ApplyToJobAsync(application);
 
-            // 🔥 GET JOB (for providerId + title)
-            var job = await _jobRepository.GetJobByIdAsync(jobId);
-            if (job == null)
-            {
-                _logger.LogWarning("Job not found after applying. jobId={JobId}, seekerId={SeekerId}", jobId, seekerId);
-                return;
-            }
+            //// 🔥 GET JOB (for providerId + title)
+            //var job = await _jobRepository.GetJobByIdAsync(jobId);
+            //if (job == null)
+            //{
+            //    _logger.LogWarning("Job not found after applying. jobId={JobId}, seekerId={SeekerId}", jobId, seekerId);
+            //    return;
+            //}
 
             var seeker = await _userRepository.GetUserByIdAsync(seekerId);
 

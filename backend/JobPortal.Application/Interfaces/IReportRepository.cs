@@ -4,6 +4,8 @@ namespace JobPortal.Application.Interfaces
 {
     public interface IReportRepository
     {
+        Task<Report?> GetByIdAsync(int id);
+        Task SaveChangesAsync();
         Task<Report> CreateReportAsync(Report report);
         Task<Report?> GetReportByIdAsync(int id);
         Task<IEnumerable<Report>> GetReportsByReporterIdAsync(int reporterId);
