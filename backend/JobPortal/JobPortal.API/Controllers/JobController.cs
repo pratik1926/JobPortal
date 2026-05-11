@@ -33,12 +33,39 @@ namespace JobPortal.API.Controllers
         }
 
         // 🔹 GET ALL JOBS (PAGINATED)
+        //[HttpGet]
+        //public async Task<IActionResult> GetJobs(int page = 1, int pageSize = 10)
+        //{
+        //    pageSize = Math.Min(pageSize, 50);
+
+        //    var (jobs, total) = await _jobService.GetPagedJobsAsync(page, pageSize);
+
+        //    return Ok(new
+        //    {
+        //        data = jobs,
+        //        total,
+        //        page,
+        //        pageSize
+        //    });
+        //}
+
         [HttpGet]
+        [Authorize]
         public async Task<IActionResult> GetJobs(int page = 1, int pageSize = 10)
         {
             pageSize = Math.Min(pageSize, 50);
 
-            var (jobs, total) = await _jobService.GetPagedJobsAsync(page, pageSize);
+            int? seekerId = null;
+
+            // 🔥 Only get seekerId if logged-in user is a seeker
+            if (User.IsInRole("Seeker"))
+            {
+                seekerId = GetUserId();
+            }
+
+            // 🔥 Pass seekerId into service
+            var (jobs, total) =
+                await _jobService.GetPagedJobsAsync(page, pageSize, seekerId);
 
             return Ok(new
             {
