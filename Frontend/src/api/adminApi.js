@@ -52,3 +52,9 @@ export const rejectReport = (id, payload) =>
 
 export const resolveReport = (id, payload) =>
   axiosClient.patch(`/report/${id}/resolve`, payload);
+
+export const restrictUserByReport = async (reportId) => {
+  return api.post(
+    `/Admin/reports/${reportId}/restrict`
+  );
+};

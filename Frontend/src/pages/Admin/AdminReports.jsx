@@ -1,239 +1,3 @@
-// import { useEffect, useState } from "react";
-
-// import {
-//   getAllReports,
-//   reviewReport,
-//   rejectReport,
-//   resolveReport
-// } from "../../api/adminApi";
-
-// import toast from "react-hot-toast";
-
-// /* DEVEXTREME */
-// import DataGrid, {
-//   Column,
-//   SearchPanel,
-//   Paging,
-//   FilterRow
-// } from "devextreme-react/data-grid";
-
-// export default function AdminReports() {
-
-//   const [reports, setReports] = useState([]);
-
-//   // 🔥 ADMIN NOTES
-//   const [adminNotes, setAdminNotes] =
-//     useState({});
-
-//   // =========================
-//   // LOAD REPORTS
-//   // =========================
-//   const loadReports = async () => {
-
-//     try {
-
-//       const res = await getAllReports();
-
-//       const reportsData =
-//         res.data?.data || res.data;
-
-//       setReports(reportsData);
-
-//     } catch (err) {
-//       console.error(err);
-//       toast.error("Failed to load reports");
-//     }
-//   };
-
-//   // =========================
-//   // INIT
-//   // =========================
-//   useEffect(() => {
-//     loadReports();
-//   }, []);
-
-//   // =========================
-//   // REPORT ACTIONS
-//   // =========================
-//   const handleReportAction = async (
-//     reportId,
-//     action
-//   ) => {
-
-//     try {
-
-//       const payload = {
-//         adminNotes:
-//           adminNotes[reportId] || ""
-//       };
-
-//       if (action === "review") {
-//         await reviewReport(reportId, payload);
-//       }
-
-//       if (action === "reject") {
-//         await rejectReport(reportId, payload);
-//       }
-
-//       if (action === "resolve") {
-//         await resolveReport(reportId, payload);
-//       }
-
-//       toast.success(
-//         `Report ${action}ed successfully`
-//       );
-
-//       loadReports();
-
-//     } catch (err) {
-//       console.error(err);
-//       toast.error("Action failed");
-//     }
-//   };
-
-//   return (
-//     <div className="bg-white dark:bg-slate-900 p-6 rounded-xl shadow">
-
-//       <h2 className="text-xl font-semibold mb-6 dark:text-white">
-//         Reports Moderation
-//       </h2>
-
-//       <DataGrid
-//         dataSource={reports}
-//         showBorders
-//         columnAutoWidth
-//       >
-
-//         <SearchPanel visible />
-//         <FilterRow visible />
-//         <Paging defaultPageSize={5} />
-
-//         <Column
-//           dataField="reporterName"
-//           caption="Reporter"
-//         />
-
-//         <Column
-//           dataField="reportedUserName"
-//           caption="Reported User"
-//         />
-
-//         <Column
-//           dataField="jobTitle"
-//           caption="Job"
-//         />
-
-//         <Column
-//           dataField="reason"
-//           caption="Reason"
-//         />
-
-//         {/* STATUS */}
-//         <Column
-//           dataField="status"
-//           caption="Status"
-//           cellRender={(data) => {
-
-//             const status = data.value;
-
-//             let color = "bg-yellow-500";
-
-//             if (status === "Rejected")
-//               color = "bg-red-500";
-
-//             if (status === "ActionTaken")
-//               color = "bg-green-500";
-
-//             if (status === "Reviewed")
-//               color = "bg-blue-500";
-
-//             return (
-//               <span
-//                 className={`text-white px-3 py-1 rounded-full text-xs ${color}`}
-//               >
-//                 {status}
-//               </span>
-//             );
-//           }}
-//         />
-
-//         {/* NOTES */}
-//         <Column
-//           caption="Admin Notes"
-//           cellRender={(data) => (
-//             <textarea
-//               rows={2}
-//               placeholder="Enter notes..."
-//               className="border rounded p-2 w-52 dark:bg-slate-800 dark:text-white"
-//               value={
-//                 adminNotes[data.data.id] || ""
-//               }
-//               onChange={(e) =>
-//                 setAdminNotes((prev) => ({
-//                   ...prev,
-//                   [data.data.id]:
-//                     e.target.value
-//                 }))
-//               }
-//             />
-//           )}
-//         />
-
-//         {/* ACTIONS */}
-//         <Column
-//           caption="Actions"
-//           cellRender={(data) => {
-
-//             const report = data.data;
-
-//             return (
-//               <div className="flex flex-col gap-2">
-
-//                 <button
-//                   onClick={() =>
-//                     handleReportAction(
-//                       report.id,
-//                       "review"
-//                     )
-//                   }
-//                   className="bg-blue-500 text-white px-3 py-1 rounded"
-//                 >
-//                   Review
-//                 </button>
-
-//                 <button
-//                   onClick={() =>
-//                     handleReportAction(
-//                       report.id,
-//                       "reject"
-//                     )
-//                   }
-//                   className="bg-red-500 text-white px-3 py-1 rounded"
-//                 >
-//                   Reject
-//                 </button>
-
-//                 <button
-//                   onClick={() =>
-//                     handleReportAction(
-//                       report.id,
-//                       "resolve"
-//                     )
-//                   }
-//                   className="bg-green-500 text-white px-3 py-1 rounded"
-//                 >
-//                   Resolve
-//                 </button>
-
-//               </div>
-//             );
-//           }}
-//         />
-
-//       </DataGrid>
-//     </div>
-//   );
-// }
 
 import { useEffect, useMemo, useState } from "react";
 
@@ -243,6 +7,7 @@ import {
   rejectReport,
   resolveReport,
   banUser,
+  restrictUserByReport,
 } from "../../api/adminApi";
 
 import toast from "react-hot-toast";
@@ -743,7 +508,7 @@ export default function AdminReports() {
                     className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-green-600 text-white hover:bg-green-700 transition"
                   >
                     <Gavel size={18} />
-                    Ban User
+                    Restrict User
                   </button>
                 </>
               )}
@@ -807,7 +572,7 @@ export default function AdminReports() {
               </button>
 
               {/* CONFIRM */}
-              <button
+              {/* <button
                 onClick={async () => {
 
                   try {
@@ -847,7 +612,50 @@ export default function AdminReports() {
                 className="px-5 py-3 rounded-xl bg-red-500 hover:bg-red-600 text-white transition"
               >
                 Yes, Ban User
-              </button>
+              </button> */}
+
+              {/* CONFIRM */}
+<button
+  onClick={async () => {
+
+    try {
+
+      // 🔥 CREATE PROVIDER RESTRICTION
+      await restrictUserByReport(
+        reportToBan.id
+      );
+
+      // 🔥 UPDATE REPORT STATUS
+      await resolveReport(
+        reportToBan.id,
+        {}
+      );
+
+      toast.success(
+        "User restricted successfully"
+      );
+
+      setShowBanConfirm(false);
+
+      setReportToBan(null);
+
+      setSelectedReport(null);
+
+      loadReports();
+
+    } catch (err) {
+
+      console.error(err);
+
+      toast.error(
+        "Failed to restrict user"
+      );
+    }
+  }}
+  className="px-5 py-3 rounded-xl bg-red-500 hover:bg-red-600 text-white transition"
+>
+  Yes, Restrict User
+</button>
 
             </div>
 

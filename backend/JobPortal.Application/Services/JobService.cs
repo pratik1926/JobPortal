@@ -129,9 +129,36 @@ namespace JobPortal.Application.Services
             _restrictionService = restrictionService;
         }
 
-        public async Task<IEnumerable<JobDto>> GetAllJobsAsync()
+        //public async Task<IEnumerable<JobDto>> GetAllJobsAsync()
+        //{
+        //    var jobs = await _jobRepository.GetAllJobsAsync();
+        //    return jobs.Select(MapToDto);
+        //}
+
+        public async Task<IEnumerable<JobDto>> GetAllJobsAsync(int? seekerId = null)
         {
+            // 🔥 Get all jobs from repository
             var jobs = await _jobRepository.GetAllJobsAsync();
+
+            // 🔥 If requester is a seeker, apply restriction filtering
+            if (seekerId.HasValue)
+            {
+                // Get all provider IDs that restricted this seeker
+                var restrictedProviders =
+                    (await _restrictionService
+                        .GetRestrictedProviderIdsForSeekerAsync(seekerId.Value))
+                    .ToHashSet();
+
+                // Remove jobs posted by restricted providers
+                if (restrictedProviders.Any())
+                {
+                    jobs = jobs
+                        .Where(j => !restrictedProviders.Contains(j.ProviderId))
+                        .ToList();
+                }
+            }
+
+            // 🔥 Convert entities → DTOs
             return jobs.Select(MapToDto);
         }
 

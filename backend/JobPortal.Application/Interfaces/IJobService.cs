@@ -5,7 +5,8 @@ namespace JobPortal.Application.Interfaces
 {
     public interface IJobService
     {
-        Task<IEnumerable<JobDto>> GetAllJobsAsync();
+        //Task<IEnumerable<JobDto>> GetAllJobsAsync();
+        Task<IEnumerable<JobDto>> GetAllJobsAsync(int? seekerId = null);
         Task CreateJobAsync(CreateJobDto dto, int providerId);
         Task<List<Job>> GetJobsByProviderId(int providerId);
         Task UpdateJobAsync(int jobId, UpdateJobDto dto, int userId);
