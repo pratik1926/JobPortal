@@ -215,7 +215,7 @@ namespace JobPortal.Infrastructure.Repositories
         }
 
         public async Task<(List<JobPortal.Domain.Entities.Application> applications, int total)>
-GetPagedApplicationsBySeekerIdAsync(int seekerId, int page, int pageSize)
+                GetPagedApplicationsBySeekerIdAsync(int seekerId, int page, int pageSize)
         {
             var query = _context.Applications
                 .Include(a => a.Job)
@@ -231,6 +231,12 @@ GetPagedApplicationsBySeekerIdAsync(int seekerId, int page, int pageSize)
                 .ToListAsync();
 
             return (applications, total);
+        }
+
+        public async Task<IEnumerable<ApplicationEntity>>GetAllApplicationsAsync()
+        {
+            return await _context.Applications
+                .ToListAsync();
         }
 
     }
