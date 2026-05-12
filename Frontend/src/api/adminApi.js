@@ -58,3 +58,22 @@ export const restrictUserByReport = async (reportId) => {
     `/Admin/reports/${reportId}/restrict`
   );
 };
+
+export const getJobsReportPreview =
+  async () => {
+
+    return api.get(
+      "/Admin/jobs-report-preview"
+    );
+};
+
+export const exportJobsReport =
+  async () => {
+
+    return api.get(
+      "/Admin/export-jobs",
+      {
+        responseType: "blob"
+      }
+    );
+};

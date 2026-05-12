@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <PackageReference Include="BCrypt.NET-Next" Version="4.1.0" />
+    <PackageReference Include="EPPlus" Version="8.5.4" />
     <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.1" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.25" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.2.9" />

@@ -133,5 +133,29 @@ namespace JobPortal.API.Controllers
             return Ok(new { data = result, message = "Provider restriction created (or already existed)." });
         }
 
+        [HttpGet("export-jobs")]
+        public async Task<IActionResult>
+ExportJobs()
+        {
+            var fileBytes =
+                await _adminService
+                .ExportJobsReportAsync();
+
+            return File(
+                fileBytes,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "jobs-report.xlsx"
+            );
+        }
+
+        [HttpGet("jobs-report-preview")]
+        public async Task<IActionResult>GetJobsReportPreview()
+        {
+            var data =
+                await _adminService
+                .GetJobsReportPreviewAsync();
+
+            return Ok(data);
+        }
     }
 }
