@@ -77,3 +77,43 @@ export const exportJobsReport =
       }
     );
 };
+
+export const exportSystemReport = () =>
+  axiosClient.get(
+    "/Admin/export-system-report",
+    {
+      responseType: "blob",
+    }
+  );
+
+export const exportUsersReport = () =>
+  axiosClient.get(
+    "/Admin/export/users",
+    {
+      responseType: "blob",
+    }
+  );
+
+export const exportModerationReport = () =>
+  axiosClient.get(
+    "/Admin/export/moderation",
+    {
+      responseType: "blob",
+    }
+  );
+
+export const exportCategoriesReport = () =>
+  axiosClient.get(
+    "/Admin/export/categories",
+    {
+      responseType: "blob",
+    }
+  );
+
+export const exportTimelineReport = () =>
+  axiosClient.get(
+    "/Admin/export/timeline",
+    {
+      responseType: "blob",
+    }
+  );

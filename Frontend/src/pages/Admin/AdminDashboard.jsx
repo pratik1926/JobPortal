@@ -277,7 +277,12 @@ import {
   unbanUser,
   getAnalytics,
   exportJobsReport,
-  getJobsReportPreview
+  getJobsReportPreview,
+  exportSystemReport,
+  exportUsersReport,
+  exportModerationReport,
+  exportCategoriesReport,
+  exportTimelineReport
 } from "../../api/adminApi";
 
 
@@ -500,6 +505,48 @@ export default function AdminDashboard() {
         "Failed to export jobs report"
       );
     }
+};
+
+const downloadFile = async (
+  apiCall,
+  filename,
+  successMessage
+) => {
+
+  try {
+
+    const response =
+      await apiCall();
+
+    const url =
+      window.URL.createObjectURL(
+        new Blob([response.data])
+      );
+
+    const link =
+      document.createElement("a");
+
+    link.href = url;
+
+    link.setAttribute(
+      "download",
+      filename
+    );
+
+    document.body.appendChild(link);
+
+    link.click();
+
+    link.remove();
+
+    toast.success(successMessage);
+
+  } catch (err) {
+
+    console.error(err);
+
+    toast.error("Download failed");
+  }
 };
 
   // 🔥 BAN / UNBAN
@@ -986,6 +1033,140 @@ export default function AdminDashboard() {
 
       </div>
 
+      {/* 🔥 REPORTING CENTER */}
+
+<div className="bg-white p-6 rounded-xl shadow">
+
+  <div className="flex items-center justify-between mb-6">
+
+    <div>
+
+      <h2 className="text-2xl font-semibold">
+        Reporting Center
+      </h2>
+
+      <p className="text-sm text-gray-500 mt-1">
+        Export analytics and moderation reports
+      </p>
+
+    </div>
+
+  </div>
+
+  <div className="
+    grid
+    grid-cols-1
+    md:grid-cols-2
+    lg:grid-cols-3
+    gap-4
+  ">
+
+    {/* SYSTEM REPORT */}
+
+    <ReportCard
+      title="Full System Report"
+      description="
+        Multi-sheet export with jobs,
+        users, analytics and moderation
+      "
+      color="bg-blue-600"
+      onClick={() =>
+        downloadFile(
+          exportSystemReport,
+          "system-report.xlsx",
+          "System report downloaded"
+        )
+      }
+    />
+
+    {/* USERS */}
+
+    <ReportCard
+      title="Users Report"
+      description="
+        Export users, roles and
+        account statuses
+      "
+      color="bg-green-600"
+      onClick={() =>
+        downloadFile(
+          exportUsersReport,
+          "users-report.xlsx",
+          "Users report downloaded"
+        )
+      }
+    />
+
+    {/* JOBS */}
+
+    <ReportCard
+      title="Jobs Report"
+      description="
+        Export jobs with applications
+        and provider analytics
+      "
+      color="bg-purple-600"
+      onClick={downloadJobsReport}
+    />
+
+    {/* MODERATION */}
+
+    <ReportCard
+      title="Moderation Report"
+      description="
+        Export moderation and
+        enforcement analytics
+      "
+      color="bg-red-600"
+      onClick={() =>
+        downloadFile(
+          exportModerationReport,
+          "moderation-report.xlsx",
+          "Moderation report downloaded"
+        )
+      }
+    />
+
+    {/* CATEGORIES */}
+
+    <ReportCard
+      title="Report Categories"
+      description="
+        Export grouped report reasons
+        and complaint categories
+      "
+      color="bg-pink-600"
+      onClick={() =>
+        downloadFile(
+          exportCategoriesReport,
+          "report-categories.xlsx",
+          "Categories report downloaded"
+        )
+      }
+    />
+
+    {/* TIMELINE */}
+
+    <ReportCard
+      title="Reports Timeline"
+      description="
+        Export reports submitted
+        over time
+      "
+      color="bg-cyan-600"
+      onClick={() =>
+        downloadFile(
+          exportTimelineReport,
+          "reports-timeline.xlsx",
+          "Timeline report downloaded"
+        )
+      }
+    />
+
+  </div>
+
+</div>
+
     </div>
   );
 }
@@ -1017,5 +1198,47 @@ function StatCard({
       </div>
 
     </div>
+  );
+}
+
+function ReportCard({
+  title,
+  description,
+  color,
+  onClick
+}) {
+
+  return (
+
+    <button
+      onClick={onClick}
+      className={`
+        ${color}
+        text-white
+        rounded-xl
+        p-5
+        text-left
+        hover:scale-[1.02]
+        transition
+        shadow
+      `}
+    >
+
+      <h3 className="
+        text-lg
+        font-semibold
+      ">
+        {title}
+      </h3>
+
+      <p className="
+        text-sm
+        opacity-90
+        mt-2
+      ">
+        {description}
+      </p>
+
+    </button>
   );
 }

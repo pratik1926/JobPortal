@@ -7,6 +7,46 @@ export default function JobApplyModal({ job, onClose }) {
   const [coverLetter, setCoverLetter] = useState("");
   const [resume, setResume] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [candidateName, setCandidateName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [skills, setSkills] = useState([]);
+
+  const handleResumeUpload = async (file) => {
+  if (!file) return;
+
+  setResume(file);
+
+  try {
+    const formData = new FormData();
+
+    formData.append("Resume", file);
+
+    const response = await axiosClient.post(
+      "/Job/parse-resume",
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+
+    const parsed = response.data;
+
+    // 🔥 AUTOFILL
+    setCandidateName(parsed.candidateName || "");
+    setEmail(parsed.email || "");
+    setPhoneNumber(parsed.phoneNumber || "");
+    setSkills(parsed.skills || []);
+
+    toast.success("Resume parsed successfully!");
+
+  } catch (err) {
+    console.log(err);
+    toast.error("Failed to parse resume");
+  }
+};
 
   const handleApply = async () => {
   if (!resume) {
@@ -36,47 +76,6 @@ export default function JobApplyModal({ job, onClose }) {
     setLoading(false);
   }
 };
-
-  // const handleApply = async () => {
-  //   if (!resume) {
-  //     toast.error("Please upload your resume");
-  //     return;
-  //   }
-
-  //   try {
-  //     setLoading(true);
-
-  //     const token = localStorage.getItem("token"); // 🔥 IMPORTANT
-
-  //     const formData = new FormData();
-  //     formData.append("Resume", resume);
-  //     formData.append("CoverLetter", coverLetter);
-
-  //     await axios.post(
-  //       `https://localhost:7240/api/Job/apply/${job.id}`,
-  //       formData,
-  //       {
-  //         headers: {
-  //           "Content-Type": "multipart/form-data",
-  //           Authorization: `Bearer ${token}`, // ✅ FIX
-  //         },
-  //       }
-  //     );
-
-  //     toast.success("Application submitted!");
-  //     onClose();
-  //   } catch (err) {
-  //     console.error(err);
-
-  //     if (err.response?.status === 401) {
-  //       toast.error("Unauthorized — please login as Seeker");
-  //     } else {
-  //       toast.error("Failed to apply");
-  //     }
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
 
 
   return (
@@ -162,10 +161,59 @@ export default function JobApplyModal({ job, onClose }) {
             <input
               type="file"
               accept=".pdf"
-              onChange={(e) => setResume(e.target.files[0])}
+              onChange={(e) => handleResumeUpload(e.target.files[0])}
               className="w-full border rounded-lg p-2 mb-3"
             />
 
+            <input
+              type="text"
+              placeholder="Candidate Name"
+              value={candidateName}
+              onChange={(e) =>
+                setCandidateName(e.target.value)
+              }
+              className="w-full border rounded-lg p-3 mb-3"
+            />
+
+            <input
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) =>
+                setEmail(e.target.value)
+              }
+              className="w-full border rounded-lg p-3 mb-3"
+            />
+
+            <input
+              type="text"
+              placeholder="Phone Number"
+              value={phoneNumber}
+              onChange={(e) =>
+                setPhoneNumber(e.target.value)
+              }
+              className="w-full border rounded-lg p-3 mb-3"
+            />
+
+            {skills.length > 0 && (
+              <div className="mb-3">
+                <p className="text-sm font-semibold mb-2">
+                  Extracted Skills
+                </p>
+
+                <div className="flex flex-wrap gap-2">
+                  {skills.map((skill, index) => (
+                    <span
+                      key={index}
+                      className="px-3 py-1 text-xs rounded-full
+                                bg-green-100 text-green-700"
+                    >
+                      {skill}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
             {/* COVER LETTER */}
             <textarea
               placeholder="Write a cover letter..."
