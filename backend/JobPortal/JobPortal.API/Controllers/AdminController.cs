@@ -133,19 +133,89 @@ namespace JobPortal.API.Controllers
             return Ok(new { data = result, message = "Provider restriction created (or already existed)." });
         }
 
-        [HttpGet("export-jobs")]
+        [HttpGet("export-system-report")]
         public async Task<IActionResult>
 ExportJobs()
         {
             var fileBytes =
                 await _adminService
-                .ExportJobsReportAsync();
+                .ExportSystemReportAsync();
 
             return File(
                 fileBytes,
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                "jobs-report.xlsx"
+                "system-report.xlsx"
             );
+        }
+
+        [HttpGet("export/jobs")]
+        public async Task<IActionResult>
+ExportJobsReport()
+        {
+            var fileBytes =
+                await _adminService
+                    .ExportJobsReportAsync();
+
+            return File(
+                fileBytes,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "jobs-report.xlsx");
+        }
+
+        [HttpGet("export/users")]
+        public async Task<IActionResult>
+ExportUsersReport()
+        {
+            var fileBytes =
+                await _adminService
+                    .ExportUsersReportAsync();
+
+            return File(
+                fileBytes,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "users-report.xlsx");
+        }
+
+        [HttpGet("export/moderation")]
+        public async Task<IActionResult>
+ExportModerationReport()
+        {
+            var fileBytes =
+                await _adminService
+                    .ExportModerationReportAsync();
+
+            return File(
+                fileBytes,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "moderation-report.xlsx");
+        }
+
+        [HttpGet("export/categories")]
+        public async Task<IActionResult>
+ExportCategoriesReport()
+        {
+            var fileBytes =
+                await _adminService
+                    .ExportReportCategoriesAsync();
+
+            return File(
+                fileBytes,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "report-categories.xlsx");
+        }
+
+        [HttpGet("export/timeline")]
+        public async Task<IActionResult>
+ExportTimelineReport()
+        {
+            var fileBytes =
+                await _adminService
+                    .ExportReportsTimelineAsync();
+
+            return File(
+                fileBytes,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "reports-timeline.xlsx");
         }
 
         [HttpGet("jobs-report-preview")]

@@ -110,45 +110,61 @@ namespace JobPortal.Application.Services
             };
         }
 
-        public async Task<byte[]> ExportJobsReportAsync()
+        public async Task<byte[]> ExportSystemReportAsync()
         {
             ExcelPackage.License
                 .SetNonCommercialPersonal("Pratik");
 
-            //  FETCH DATA
+            // FETCH DATA
+            var users =
+                await _userRepository
+                    .GetAllUsersAsync();
+
             var jobs =
                 (await _jobRepository
-                .GetAllJobsAsync())
+                    .GetAllJobsAsync())
                 .ToList();
 
             var applications =
                 (await _jobRepository
-                .GetAllApplicationsAsync())
+                    .GetAllApplicationsAsync())
                 .ToList();
 
-            //  CREATE EXCEL PACKAGE
+            var reports =
+                await _reportRepository
+                    .GetAllReportsAsync();
+
             using var package =
                 new ExcelPackage();
 
-            //  CREATE WORKSHEET
-            var worksheet =
+            // =====================================================
+            // JOBS SHEET
+            // =====================================================
+
+            var jobsSheet =
                 package.Workbook.Worksheets
-                .Add("Jobs Report");
+                .Add("Jobs");
 
-            //  HEADERS
-            worksheet.Cells[1, 1].Value = "JobId";
-            worksheet.Cells[1, 2].Value = "JobTitle";
-            worksheet.Cells[1, 3].Value = "Location";
-            worksheet.Cells[1, 4].Value = "Budget";
-            worksheet.Cells[1, 5].Value = "ProviderId";
-            worksheet.Cells[1, 6].Value = "TotalApplications";
-            worksheet.Cells[1, 7].Value = "ApprovedApplications";
-            worksheet.Cells[1, 8].Value = "RejectedApplications";
-            worksheet.Cells[1, 9].Value = "CreatedDate";
+            jobsSheet.Cells[1, 1].Value =
+                "Job Title";
 
-            //  HEADER STYLING
+            jobsSheet.Cells[1, 2].Value =
+                "Budget";
+
+            jobsSheet.Cells[1, 3].Value =
+                "Location";
+
+            jobsSheet.Cells[1, 4].Value =
+                "Provider Name";
+
+            jobsSheet.Cells[1, 5].Value =
+                "Applications Received";
+
+            jobsSheet.Cells[1, 6].Value =
+                "Created Date";
+
             using (var range =
-                worksheet.Cells[1, 1, 1, 9])
+                jobsSheet.Cells[1, 1, 1, 6])
             {
                 range.Style.Font.Bold = true;
 
@@ -156,100 +172,733 @@ namespace JobPortal.Application.Services
                     ExcelFillStyle.Solid;
 
                 range.Style.Fill.BackgroundColor
-                    .SetColor(Color.LightBlue);
+                    .SetColor(Color.DarkBlue);
+
+                range.Style.Font.Color
+                    .SetColor(Color.White);
             }
+
+            jobsSheet.View.FreezePanes(2, 1);
+
+            int jobRow = 2;
+
+            foreach (var job in jobs)
+            {
+                var totalApplications =
+                    applications.Count(a =>
+                        a.JobId == job.Id);
+
+                jobsSheet.Cells[jobRow, 1].Value =
+                    job.Title;
+
+                jobsSheet.Cells[jobRow, 2].Value =
+                    job.Budget;
+
+                jobsSheet.Cells[jobRow, 3].Value =
+                    job.Location;
+
+                jobsSheet.Cells[jobRow, 4].Value =
+                    job.Provider?.Name;
+
+                jobsSheet.Cells[jobRow, 5].Value =
+                    totalApplications;
+
+                jobsSheet.Cells[jobRow, 6].Value =
+                    job.CreatedAt;
+
+                jobsSheet.Cells[jobRow, 6]
+                    .Style.Numberformat.Format =
+                        "yyyy-mm-dd HH:mm";
+
+                jobRow++;
+            }
+
+            jobsSheet.Cells.AutoFitColumns();
+
+            // =====================================================
+            // USERS SHEET
+            // =====================================================
+
+            var usersSheet =
+                package.Workbook.Worksheets
+                .Add("Users");
+
+            usersSheet.Cells[1, 1].Value =
+                "Name";
+
+            usersSheet.Cells[1, 2].Value =
+                "Email";
+
+            usersSheet.Cells[1, 3].Value =
+                "Role";
+
+            usersSheet.Cells[1, 4].Value =
+                "IsBanned";
+
+            using (var range =
+                usersSheet.Cells[1, 1, 1, 4])
+            {
+                range.Style.Font.Bold = true;
+
+                range.Style.Fill.PatternType =
+                    ExcelFillStyle.Solid;
+
+                range.Style.Fill.BackgroundColor
+                    .SetColor(Color.DarkGreen);
+
+                range.Style.Font.Color
+                    .SetColor(Color.White);
+            }
+
+            usersSheet.View.FreezePanes(2, 1);
+
+            int userRow = 2;
+
+            foreach (var user in users)
+            {
+                usersSheet.Cells[userRow, 1].Value =
+                    user.Name;
+
+                usersSheet.Cells[userRow, 2].Value =
+                    user.Email;
+
+                usersSheet.Cells[userRow, 3].Value =
+                    user.Role;
+
+                usersSheet.Cells[userRow, 4].Value =
+                    user.IsBanned;
+
+                userRow++;
+            }
+
+            usersSheet.Cells.AutoFitColumns();
+
+            // =====================================================
+            // ANALYTICS SHEET
+            // =====================================================
+
+            var analyticsSheet =
+                package.Workbook.Worksheets
+                .Add("Analytics");
+
+            analyticsSheet.Cells[1, 1].Value =
+                "Metric";
+
+            analyticsSheet.Cells[1, 2].Value =
+                "Value";
+
+            using (var range =
+                analyticsSheet.Cells[1, 1, 1, 2])
+            {
+                range.Style.Font.Bold = true;
+
+                range.Style.Fill.PatternType =
+                    ExcelFillStyle.Solid;
+
+                range.Style.Fill.BackgroundColor
+                    .SetColor(Color.DarkOrange);
+
+                range.Style.Font.Color
+                    .SetColor(Color.White);
+            }
+
+            analyticsSheet.View.FreezePanes(2, 1);
+
+            // ANALYTICS
+            var totalUsers = users.Count;
+
+            var bannedUsers =
+                users.Count(u => u.IsBanned);
+
+            var activeUsers =
+                totalUsers - bannedUsers;
+
+            var seekers =
+                users.Count(u =>
+                    u.Role == "Seeker");
+
+            var providers =
+                users.Count(u =>
+                    u.Role == "Provider");
+
+            var totalJobs =
+                jobs.Count;
+
+            var totalReports =
+                reports.Count();
+
+            var pendingReports =
+                reports.Count(r =>
+                    r.Status == "Pending");
+
+            var rejectedReports =
+                reports.Count(r =>
+                    r.Status == "Rejected");
+
+            var actionTakenReports =
+                reports.Count(r =>
+                    r.Status == "Resolved" ||
+                    r.Status == "ActionTaken");
+
+            int analyticsRow = 2;
+
+            analyticsSheet.Cells[analyticsRow, 1].Value =
+                "Total Users";
+
+            analyticsSheet.Cells[analyticsRow++, 2].Value =
+                totalUsers;
+
+            analyticsSheet.Cells[analyticsRow, 1].Value =
+                "Active Users";
+
+            analyticsSheet.Cells[analyticsRow++, 2].Value =
+                activeUsers;
+
+            analyticsSheet.Cells[analyticsRow, 1].Value =
+                "Banned Users";
+
+            analyticsSheet.Cells[analyticsRow++, 2].Value =
+                bannedUsers;
+
+            analyticsSheet.Cells[analyticsRow, 1].Value =
+                "Seekers";
+
+            analyticsSheet.Cells[analyticsRow++, 2].Value =
+                seekers;
+
+            analyticsSheet.Cells[analyticsRow, 1].Value =
+                "Providers";
+
+            analyticsSheet.Cells[analyticsRow++, 2].Value =
+                providers;
+
+            analyticsSheet.Cells[analyticsRow, 1].Value =
+                "Total Jobs";
+
+            analyticsSheet.Cells[analyticsRow++, 2].Value =
+                totalJobs;
+
+            analyticsSheet.Cells[analyticsRow, 1].Value =
+                "Total Applications";
+
+            analyticsSheet.Cells[analyticsRow++, 2].Value =
+                applications.Count;
+
+            analyticsSheet.Cells[analyticsRow, 1].Value =
+                "Total Reports";
+
+            analyticsSheet.Cells[analyticsRow++, 2].Value =
+                totalReports;
+
+            analyticsSheet.Cells[analyticsRow, 1].Value =
+                "Pending Reports";
+
+            analyticsSheet.Cells[analyticsRow++, 2].Value =
+                pendingReports;
+
+            analyticsSheet.Cells[analyticsRow, 1].Value =
+                "Rejected Reports";
+
+            analyticsSheet.Cells[analyticsRow++, 2].Value =
+                rejectedReports;
+
+            analyticsSheet.Cells[analyticsRow, 1].Value =
+                "Resolved Reports";
+
+            analyticsSheet.Cells[analyticsRow++, 2].Value =
+                actionTakenReports;
+
+            var avgJobsPerProvider =
+                providers == 0
+                ? 0
+                : (double)totalJobs / providers;
+
+            analyticsSheet.Cells[analyticsRow, 1].Value =
+                "Average Jobs Per Provider";
+
+            analyticsSheet.Cells[analyticsRow++, 2].Value =
+                Math.Round(avgJobsPerProvider, 2);
+
+            var avgApplicationsPerJob =
+                totalJobs == 0
+                ? 0
+                : (double)applications.Count / totalJobs;
+
+            analyticsSheet.Cells[analyticsRow, 1].Value =
+                "Average Applications Per Job";
+
+            analyticsSheet.Cells[analyticsRow++, 2].Value =
+                Math.Round(avgApplicationsPerJob, 2);
+
+            analyticsSheet.Cells.AutoFitColumns();
+
+            // =====================================================
+            // MODERATION SHEET
+            // =====================================================
+
+            var moderationSheet =
+                package.Workbook.Worksheets
+                .Add("Moderation");
+
+            moderationSheet.Cells[1, 1].Value =
+                "Report Status";
+
+            moderationSheet.Cells[1, 2].Value =
+                "Count";
+
+            using (var range =
+                moderationSheet.Cells[1, 1, 1, 2])
+            {
+                range.Style.Font.Bold = true;
+
+                range.Style.Fill.PatternType =
+                    ExcelFillStyle.Solid;
+
+                range.Style.Fill.BackgroundColor
+                    .SetColor(Color.DarkRed);
+
+                range.Style.Font.Color
+                    .SetColor(Color.White);
+            }
+
+            moderationSheet.View.FreezePanes(2, 1);
+
+            moderationSheet.Cells[2, 1].Value =
+                "Pending";
+
+            moderationSheet.Cells[2, 2].Value =
+                pendingReports;
+
+            moderationSheet.Cells[3, 1].Value =
+                "Rejected";
+
+            moderationSheet.Cells[3, 2].Value =
+                rejectedReports;
+
+            moderationSheet.Cells[4, 1].Value =
+                "Resolved / Action Taken";
+
+            moderationSheet.Cells[4, 2].Value =
+                actionTakenReports;
+
+            moderationSheet.Cells.AutoFitColumns();
+
+            // =====================================================
+            // REPORT CATEGORIES SHEET
+            // =====================================================
+
+            var categoriesSheet =
+                package.Workbook.Worksheets
+                .Add("Report Categories");
+
+            categoriesSheet.Cells[1, 1].Value =
+                "Report Reason";
+
+            categoriesSheet.Cells[1, 2].Value =
+                "Count";
+
+            using (var range =
+                categoriesSheet.Cells[1, 1, 1, 2])
+            {
+                range.Style.Font.Bold = true;
+
+                range.Style.Fill.PatternType =
+                    ExcelFillStyle.Solid;
+
+                range.Style.Fill.BackgroundColor
+                    .SetColor(Color.Purple);
+
+                range.Style.Font.Color
+                    .SetColor(Color.White);
+            }
+
+            categoriesSheet.View.FreezePanes(2, 1);
+
+            var topReportReasons =
+                reports.GroupBy(r => r.Reason)
+                    .Select(g => new
+                    {
+                        reason = g.Key,
+                        count = g.Count()
+                    })
+                    .OrderByDescending(x => x.count)
+                    .Take(10)
+                    .ToList();
+
+            int categoryRow = 2;
+
+            foreach (var reason in topReportReasons)
+            {
+                categoriesSheet.Cells[categoryRow, 1].Value =
+                    reason.reason;
+
+                categoriesSheet.Cells[categoryRow, 2].Value =
+                    reason.count;
+
+                categoryRow++;
+            }
+
+            categoriesSheet.Cells.AutoFitColumns();
+
+            // =====================================================
+            // REPORTS TIMELINE SHEET
+            // =====================================================
+
+            var timelineSheet =
+                package.Workbook.Worksheets
+                .Add("Reports Timeline");
+
+            timelineSheet.Cells[1, 1].Value =
+                "Date";
+
+            timelineSheet.Cells[1, 2].Value =
+                "Reports Submitted";
+
+            using (var range =
+                timelineSheet.Cells[1, 1, 1, 2])
+            {
+                range.Style.Font.Bold = true;
+
+                range.Style.Fill.PatternType =
+                    ExcelFillStyle.Solid;
+
+                range.Style.Fill.BackgroundColor
+                    .SetColor(Color.DarkCyan);
+
+                range.Style.Font.Color
+                    .SetColor(Color.White);
+            }
+
+            timelineSheet.View.FreezePanes(2, 1);
+
+            var reportsPerDay =
+                reports.GroupBy(r => r.CreatedAt.Date)
+                    .Select(g => new
+                    {
+                        date = g.Key,
+                        count = g.Count()
+                    })
+                    .OrderBy(x => x.date)
+                    .ToList();
+
+            int timelineRow = 2;
+
+            foreach (var item in reportsPerDay)
+            {
+                timelineSheet.Cells[timelineRow, 1].Value =
+                    item.date;
+
+                timelineSheet.Cells[timelineRow, 1]
+                    .Style.Numberformat.Format =
+                        "yyyy-mm-dd";
+
+                timelineSheet.Cells[timelineRow, 2].Value =
+                    item.count;
+
+                timelineRow++;
+            }
+
+            timelineSheet.Cells.AutoFitColumns();
+
+            // RETURN FILE
+            return package.GetAsByteArray();
+        }
+
+        public async Task<byte[]> ExportJobsReportAsync()
+        {
+            ExcelPackage.License
+                .SetNonCommercialPersonal("Pratik");
+
+            var jobs =
+                (await _jobRepository
+                    .GetAllJobsAsync())
+                .ToList();
+
+            var applications =
+                (await _jobRepository
+                    .GetAllApplicationsAsync())
+                .ToList();
+
+            using var package =
+                new ExcelPackage();
+
+            var sheet =
+                package.Workbook.Worksheets
+                .Add("Jobs");
+
+            sheet.Cells[1, 1].Value =
+                "Job Title";
+
+            sheet.Cells[1, 2].Value =
+                "Budget";
+
+            sheet.Cells[1, 3].Value =
+                "Location";
+
+            sheet.Cells[1, 4].Value =
+                "Provider Name";
+
+            sheet.Cells[1, 5].Value =
+                "Applications Received";
+
+            sheet.Cells[1, 6].Value =
+                "Created Date";
 
             int row = 2;
 
-            //ADD DATA ROWS
             foreach (var job in jobs)
             {
-                var jobApplications =
-                    applications.Where(a =>
-                        a.JobId == job.Id)
-                    .ToList();
-
                 var totalApplications =
-                    jobApplications.Count;
+                    applications.Count(a =>
+                        a.JobId == job.Id);
 
-                var approvedApplications =
-                    jobApplications.Count(a =>
-                        a.Status == "Approved");
-
-                var rejectedApplications =
-                    jobApplications.Count(a =>
-                        a.Status == "Rejected");
-
-                worksheet.Cells[row, 1].Value =
-                    job.Id;
-
-                worksheet.Cells[row, 2].Value =
+                sheet.Cells[row, 1].Value =
                     job.Title;
 
-                worksheet.Cells[row, 3].Value =
-                    job.Location;
-
-                worksheet.Cells[row, 4].Value =
+                sheet.Cells[row, 2].Value =
                     job.Budget;
 
-                worksheet.Cells[row, 5].Value =
-                    job.ProviderId;
+                sheet.Cells[row, 3].Value =
+                    job.Location;
 
-                worksheet.Cells[row, 6].Value =
+                sheet.Cells[row, 4].Value =
+                    job.Provider?.Name;
+
+                sheet.Cells[row, 5].Value =
                     totalApplications;
 
-                worksheet.Cells[row, 7].Value =
-                    approvedApplications;
-
-                worksheet.Cells[row, 8].Value =
-                    rejectedApplications;
-
-                worksheet.Cells[row, 9].Value =
+                sheet.Cells[row, 6].Value =
                     job.CreatedAt;
 
-                worksheet.Cells[row, 9]
+                sheet.Cells[row, 6]
                     .Style.Numberformat.Format =
-                        "yyyy-mm-dd hh:mm:ss";
+                        "yyyy-mm-dd HH:mm";
 
                 row++;
             }
 
-            // AUTO FIT COLUMNS
-            worksheet.Cells.AutoFitColumns();
+            sheet.Cells.AutoFitColumns();
 
-            // CREATE REPORTS FOLDER
-            var reportsFolder =
-                Path.Combine(
-                    Directory.GetCurrentDirectory(),
-                    "Reports"
-                );
+            return package.GetAsByteArray();
+        }
 
-            if (!Directory.Exists(reportsFolder))
+        public async Task<byte[]> ExportUsersReportAsync()
+        {
+            ExcelPackage.License
+                .SetNonCommercialPersonal("Pratik");
+
+            var users =
+                await _userRepository
+                    .GetAllUsersAsync();
+
+            using var package =
+                new ExcelPackage();
+
+            var sheet =
+                package.Workbook.Worksheets
+                .Add("Users");
+
+            sheet.Cells[1, 1].Value =
+                "Name";
+
+            sheet.Cells[1, 2].Value =
+                "Email";
+
+            sheet.Cells[1, 3].Value =
+                "Role";
+
+            sheet.Cells[1, 4].Value =
+                "IsBanned";
+
+            int row = 2;
+
+            foreach (var user in users)
             {
-                Directory.CreateDirectory(
-                    reportsFolder
-                );
+                sheet.Cells[row, 1].Value =
+                    user.Name;
+
+                sheet.Cells[row, 2].Value =
+                    user.Email;
+
+                sheet.Cells[row, 3].Value =
+                    user.Role;
+
+                sheet.Cells[row, 4].Value =
+                    user.IsBanned;
+
+                row++;
             }
 
-            // FILE PATH
-            var filePath =
-                Path.Combine(
-                    reportsFolder,
-                    "jobs-report.xlsx"
-                );
+            sheet.Cells.AutoFitColumns();
 
-            // GENERATE EXCEL BYTES
-            var bytes =
-                package.GetAsByteArray();
+            return package.GetAsByteArray();
+        }
 
-            // SAVE FILE PHYSICALLY
-            await File.WriteAllBytesAsync(
-                filePath,
-                bytes
-            );
+        public async Task<byte[]> ExportModerationReportAsync()
+        {
+            ExcelPackage.License
+                .SetNonCommercialPersonal("Pratik");
 
-            // RETURN FILE BYTES
-            return bytes;
+            var reports =
+                await _reportRepository
+                    .GetAllReportsAsync();
+
+            using var package =
+                new ExcelPackage();
+
+            var sheet =
+                package.Workbook.Worksheets
+                .Add("Moderation");
+
+            sheet.Cells[1, 1].Value =
+                "Report Status";
+
+            sheet.Cells[1, 2].Value =
+                "Count";
+
+            var pending =
+                reports.Count(r =>
+                    r.Status == "Pending");
+
+            var rejected =
+                reports.Count(r =>
+                    r.Status == "Rejected");
+
+            var resolved =
+                reports.Count(r =>
+                    r.Status == "Resolved" ||
+                    r.Status == "ActionTaken");
+
+            sheet.Cells[2, 1].Value =
+                "Pending";
+
+            sheet.Cells[2, 2].Value =
+                pending;
+
+            sheet.Cells[3, 1].Value =
+                "Rejected";
+
+            sheet.Cells[3, 2].Value =
+                rejected;
+
+            sheet.Cells[4, 1].Value =
+                "Resolved";
+
+            sheet.Cells[4, 2].Value =
+                resolved;
+
+            sheet.Cells.AutoFitColumns();
+
+            return package.GetAsByteArray();
+        }
+
+        public async Task<byte[]> ExportReportCategoriesAsync()
+        {
+            ExcelPackage.License
+                .SetNonCommercialPersonal("Pratik");
+
+            var reports =
+                await _reportRepository
+                    .GetAllReportsAsync();
+
+            using var package =
+                new ExcelPackage();
+
+            var sheet =
+                package.Workbook.Worksheets
+                .Add("Report Categories");
+
+            sheet.Cells[1, 1].Value =
+                "Report Reason";
+
+            sheet.Cells[1, 2].Value =
+                "Count";
+
+            var grouped =
+                reports.GroupBy(r => r.Reason)
+                    .Select(g => new
+                    {
+                        reason = g.Key,
+                        count = g.Count()
+                    })
+                    .OrderByDescending(x => x.count)
+                    .ToList();
+
+            int row = 2;
+
+            foreach (var item in grouped)
+            {
+                sheet.Cells[row, 1].Value =
+                    item.reason;
+
+                sheet.Cells[row, 2].Value =
+                    item.count;
+
+                row++;
+            }
+
+            sheet.Cells.AutoFitColumns();
+
+            return package.GetAsByteArray();
+        }
+
+        public async Task<byte[]> ExportReportsTimelineAsync()
+        {
+            ExcelPackage.License
+                .SetNonCommercialPersonal("Pratik");
+
+            var reports =
+                await _reportRepository
+                    .GetAllReportsAsync();
+
+            using var package =
+                new ExcelPackage();
+
+            var sheet =
+                package.Workbook.Worksheets
+                .Add("Reports Timeline");
+
+            sheet.Cells[1, 1].Value =
+                "Date";
+
+            sheet.Cells[1, 2].Value =
+                "Reports Submitted";
+
+            var grouped =
+                reports.GroupBy(r => r.CreatedAt.Date)
+                    .Select(g => new
+                    {
+                        date = g.Key,
+                        count = g.Count()
+                    })
+                    .OrderBy(x => x.date)
+                    .ToList();
+
+            int row = 2;
+
+            foreach (var item in grouped)
+            {
+                sheet.Cells[row, 1].Value =
+                    item.date;
+
+                sheet.Cells[row, 1]
+                    .Style.Numberformat.Format =
+                        "yyyy-mm-dd";
+
+                sheet.Cells[row, 2].Value =
+                    item.count;
+
+                row++;
+            }
+
+            sheet.Cells.AutoFitColumns();
+
+            return package.GetAsByteArray();
+        }
+
+        public async Task<byte[]> ExportAnalyticsReportAsync()
+        {
+            return await ExportSystemReportAsync();
         }
 
         public async Task<List<JobReportPreviewDto>>
@@ -298,6 +947,7 @@ GetJobsReportPreviewAsync()
 
                         CreatedDate =
                             job.CreatedAt
+                          
                     };
                 }).ToList();
 

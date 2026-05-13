@@ -5,12 +5,14 @@ using JobPortal.API.Infrastructure;
 using JobPortal.API.Middleware;
 using JobPortal.API.Services;
 using JobPortal.Application.Interfaces;
+using JobPortal.Application.Interfaces.Files;
 using JobPortal.Application.Services;
 using JobPortal.Application.Settings;
 using JobPortal.Application.Validators;
 using JobPortal.Infrastructure.Persistence;
 using JobPortal.Infrastructure.Repositories;
 using JobPortal.Infrastructure.Services;
+using JobPortal.Infrastructure.Services.Files;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
@@ -186,6 +188,8 @@ namespace JobPortal.API
 
             builder.Services.AddScoped<IProviderRestrictionRepository, ProviderRestrictionRepository>();
             builder.Services.AddScoped<IProviderRestrictionService, ProviderRestrictionService>();
+
+            builder.Services.AddScoped<IResumeReaderService, ResumeReaderService>();
 
             var app = builder.Build();
 

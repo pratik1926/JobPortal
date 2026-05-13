@@ -33,6 +33,11 @@ import ProviderReports from "./pages/provider/ProviderReport";
 
 import Profile from "./features/profile/Profile";
 
+import ReportingCenter
+  from "./pages/admin/ReportingCenter";
+
+import ReportPreview
+  from "./pages/admin/ReportPreview";
 
 function App() {
   return (
@@ -60,6 +65,9 @@ function App() {
           <Route path="users" element={<AdminUsers />} />
           <Route path="jobs" element={<AdminJobs />} />
           <Route path="reports" element={<AdminReports />} />
+
+          <Route path="reporting" element={<ReportingCenter />}/>
+          <Route path="reporting/:type" element={<ReportPreview />}/>
         </Route>
 
         {/* 🔒 PROVIDER ROUTES */}

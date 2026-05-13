@@ -5,6 +5,7 @@ using System.Security.Claims;
 using JobPortal.API.DTOs;
 using JobPortal.Application.DTOs;
 using JobPortal.Application.Exceptions;
+using JobPortal.Application.Interfaces.Files;
 
 namespace JobPortal.API.Controllers
 {
@@ -14,13 +15,16 @@ namespace JobPortal.API.Controllers
     {
         private readonly IJobService _jobService;
         private readonly IApplicationService _applicationService;
+        private readonly IResumeReaderService _resumeReaderService;
 
         public JobController(
             IJobService jobService,
-            IApplicationService applicationService)
+            IApplicationService applicationService,
+            IResumeReaderService resumeReaderService)
         {
             _jobService = jobService;
             _applicationService = applicationService;
+            _resumeReaderService = resumeReaderService;
         }
 
         private int? GetUserId()
@@ -94,10 +98,90 @@ namespace JobPortal.API.Controllers
             return Ok(new { message = "Job Created Successfully" });
         }
 
-        // 🔹 APPLY TO JOB
+        [HttpPost("parse-resume")]
+        [Authorize(Roles = "Seeker")]
+        public async Task<IActionResult> ParseResume(
+    [FromForm] ParseResumeRequest request)
+        {
+            if (request.Resume == null ||
+                request.Resume.Length == 0)
+            {
+                throw new BadRequestException(
+                    "Resume is required");
+            }
+
+            var extension =
+                Path.GetExtension(request.Resume.FileName)
+                    .ToLower();
+
+            if (extension != ".pdf")
+            {
+                throw new BadRequestException(
+                    "Only PDF resumes are allowed");
+            }
+
+            byte[] fileBytes;
+
+            using (var ms = new MemoryStream())
+            {
+                await request.Resume.CopyToAsync(ms);
+                fileBytes = ms.ToArray();
+            }
+
+            var parsedResume =
+                await _resumeReaderService.ReadResumeAsync(
+                    fileBytes,
+                    request.Resume.FileName);
+
+            return Ok(new
+            {
+                candidateName =
+                    parsedResume.CandidateName,
+
+                email =
+                    parsedResume.Email,
+
+                phoneNumber =
+                    parsedResume.PhoneNumber,
+
+                skills =
+                    parsedResume.Skills
+            });
+        }
+
+        //// 🔹 APPLY TO JOB
+        //[HttpPost("apply/{jobId}")]
+        //[Authorize(Roles = "Seeker")]
+        //public async Task<IActionResult> ApplyToJob(int jobId, [FromForm] ApplyJobRequest request)
+        //{
+        //    var userId = GetUserId();
+
+        //    if (userId == null)
+        //        return Unauthorized();
+
+        //    if (request.Resume == null || request.Resume.Length == 0)
+        //        throw new BadRequestException("Resume is required");
+
+        //    using var ms = new MemoryStream();
+        //    await request.Resume.CopyToAsync(ms);
+
+        //    var dto = new ApplyJobDto
+        //    {
+        //        Resume = ms.ToArray(),
+        //        FileName = request.Resume.FileName,
+        //        CoverLetter = request.CoverLetter
+        //    };
+
+        //    await _applicationService.ApplyToJobAsync(jobId, userId.Value, dto);
+
+        //    return Ok(new { message = "Applied successfully" });
+        //}
+
         [HttpPost("apply/{jobId}")]
         [Authorize(Roles = "Seeker")]
-        public async Task<IActionResult> ApplyToJob(int jobId, [FromForm] ApplyJobRequest request)
+        public async Task<IActionResult> ApplyToJob(
+    int jobId,
+    [FromForm] ApplyJobRequest request)
         {
             var userId = GetUserId();
 
@@ -105,22 +189,45 @@ namespace JobPortal.API.Controllers
                 return Unauthorized();
 
             if (request.Resume == null || request.Resume.Length == 0)
+            {
                 throw new BadRequestException("Resume is required");
+            }
 
-            using var ms = new MemoryStream();
-            await request.Resume.CopyToAsync(ms);
+            var extension =
+                Path.GetExtension(request.Resume.FileName).ToLower();
+
+            if (extension != ".pdf")
+            {
+                throw new BadRequestException(
+                    "Only PDF resumes are allowed");
+            }
+
+            byte[] fileBytes;
+
+            using (var ms = new MemoryStream())
+            {
+                await request.Resume.CopyToAsync(ms);
+                fileBytes = ms.ToArray();
+            }
 
             var dto = new ApplyJobDto
             {
-                Resume = ms.ToArray(),
+                Resume = fileBytes,
                 FileName = request.Resume.FileName,
                 CoverLetter = request.CoverLetter
             };
 
-            await _applicationService.ApplyToJobAsync(jobId, userId.Value, dto);
+            await _applicationService.ApplyToJobAsync(
+                jobId,
+                userId.Value,
+                dto);
 
-            return Ok(new { message = "Applied successfully" });
+            return Ok(new
+            {
+                message = "Applied successfully"
+            });
         }
+
 
         // 🔥 GET MY JOBS (PAGINATED)
         [HttpGet("my-jobs")]
