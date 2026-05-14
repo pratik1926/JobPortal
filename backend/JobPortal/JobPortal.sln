@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JobPortal.Infrastructure", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JobPortal.Tests", "JobPortal.Tests\JobPortal.Tests.csproj", "{6BDF6B14-0485-4637-9687-17AD44EC36AA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JobPortal.IntegrationTests", "JobPortal.IntegrationTests\JobPortal.IntegrationTests.csproj", "{9F7DC973-6940-4759-A498-E55BD31DE99A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -83,8 +85,23 @@ Global
 		{6BDF6B14-0485-4637-9687-17AD44EC36AA}.Release|x64.Build.0 = Release|Any CPU
 		{6BDF6B14-0485-4637-9687-17AD44EC36AA}.Release|x86.ActiveCfg = Release|Any CPU
 		{6BDF6B14-0485-4637-9687-17AD44EC36AA}.Release|x86.Build.0 = Release|Any CPU
+		{9F7DC973-6940-4759-A498-E55BD31DE99A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9F7DC973-6940-4759-A498-E55BD31DE99A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9F7DC973-6940-4759-A498-E55BD31DE99A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{9F7DC973-6940-4759-A498-E55BD31DE99A}.Debug|x64.Build.0 = Debug|Any CPU
+		{9F7DC973-6940-4759-A498-E55BD31DE99A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{9F7DC973-6940-4759-A498-E55BD31DE99A}.Debug|x86.Build.0 = Debug|Any CPU
+		{9F7DC973-6940-4759-A498-E55BD31DE99A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9F7DC973-6940-4759-A498-E55BD31DE99A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9F7DC973-6940-4759-A498-E55BD31DE99A}.Release|x64.ActiveCfg = Release|Any CPU
+		{9F7DC973-6940-4759-A498-E55BD31DE99A}.Release|x64.Build.0 = Release|Any CPU
+		{9F7DC973-6940-4759-A498-E55BD31DE99A}.Release|x86.ActiveCfg = Release|Any CPU
+		{9F7DC973-6940-4759-A498-E55BD31DE99A}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {7236B060-4C24-497E-9E9D-036338752036}
 	EndGlobalSection
 EndGlobal

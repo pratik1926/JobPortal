@@ -145,7 +145,13 @@ namespace JobPortal.API.Controllers
                     parsedResume.PhoneNumber,
 
                 skills =
-                    parsedResume.Skills
+                    parsedResume.Skills,
+
+                education =
+                     parsedResume.Education,
+
+                experience =
+                     parsedResume.Experience
             });
         }
 

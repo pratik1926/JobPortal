@@ -11,5 +11,9 @@
         public string? PhoneNumber { get; set; }
 
         public List<string> Skills { get; set; } = new();
+
+        public List<string> Education { get; set; } = new();
+
+        public List<string> Experience { get; set; } = new();
     }
 }
