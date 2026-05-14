@@ -137,9 +137,7 @@ namespace JobPortal.Application.Services
             using var package =
                 new ExcelPackage();
 
-            // =====================================================
-            // JOBS SHEET
-            // =====================================================
+          
 
             var jobsSheet =
                 package.Workbook.Worksheets
@@ -215,10 +213,6 @@ namespace JobPortal.Application.Services
 
             jobsSheet.Cells.AutoFitColumns();
 
-            // =====================================================
-            // USERS SHEET
-            // =====================================================
-
             var usersSheet =
                 package.Workbook.Worksheets
                 .Add("Users");
@@ -273,10 +267,7 @@ namespace JobPortal.Application.Services
 
             usersSheet.Cells.AutoFitColumns();
 
-            // =====================================================
-            // ANALYTICS SHEET
-            // =====================================================
-
+       
             var analyticsSheet =
                 package.Workbook.Worksheets
                 .Add("Analytics");
@@ -432,10 +423,6 @@ namespace JobPortal.Application.Services
 
             analyticsSheet.Cells.AutoFitColumns();
 
-            // =====================================================
-            // MODERATION SHEET
-            // =====================================================
-
             var moderationSheet =
                 package.Workbook.Worksheets
                 .Add("Moderation");
@@ -483,9 +470,7 @@ namespace JobPortal.Application.Services
 
             moderationSheet.Cells.AutoFitColumns();
 
-            // =====================================================
-            // REPORT CATEGORIES SHEET
-            // =====================================================
+           
 
             var categoriesSheet =
                 package.Workbook.Worksheets
@@ -540,9 +525,7 @@ namespace JobPortal.Application.Services
 
             categoriesSheet.Cells.AutoFitColumns();
 
-            // =====================================================
-            // REPORTS TIMELINE SHEET
-            // =====================================================
+        
 
             var timelineSheet =
                 package.Workbook.Worksheets
