@@ -60,5 +60,10 @@ namespace JobPortal.IntegrationTests.Factories
 
             _connection?.Dispose();
         }
+
+        public IServiceScope CreateScope()
+        {
+            return Services.CreateScope();
+        }
     }
 }

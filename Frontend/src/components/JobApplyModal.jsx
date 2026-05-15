@@ -11,6 +11,7 @@ export default function JobApplyModal({ job, onClose }) {
   const [email, setEmail] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [skills, setSkills] = useState([]);
+  const [education, setEducation] = useState([]);
 
   const handleResumeUpload = async (file) => {
   if (!file) return;
@@ -33,13 +34,14 @@ export default function JobApplyModal({ job, onClose }) {
     );
 
     const parsed = response.data;
+    console.log(parsed);
 
     // 🔥 AUTOFILL
     setCandidateName(parsed.candidateName || "");
     setEmail(parsed.email || "");
     setPhoneNumber(parsed.phoneNumber || "");
     setSkills(parsed.skills || []);
-
+    setEducation(parsed.education || []);
     toast.success("Resume parsed successfully!");
 
   } catch (err) {
@@ -214,6 +216,45 @@ export default function JobApplyModal({ job, onClose }) {
                 </div>
               </div>
             )}
+
+            {/* EDUCATION */}
+<div className="mb-4">
+  <p className="text-sm font-semibold mb-2">
+    Education
+  </p>
+
+  {education.length > 0 ? (
+    education.map((edu, index) => (
+      <textarea
+        key={index}
+        value={edu}
+        onChange={(e) => {
+          const updatedEducation =
+            [...education];
+
+          updatedEducation[index] =
+            e.target.value;
+
+          setEducation(
+            updatedEducation
+          );
+        }}
+        className="w-full border rounded-lg p-3 mb-2 text-sm"
+        rows={3}
+      />
+    ))
+  ) : (
+    <textarea
+      placeholder="Education details"
+      className="w-full border rounded-lg p-3 text-sm"
+      rows={3}
+      onChange={(e) =>
+        setEducation([e.target.value])
+      }
+    />
+  )}
+</div>
+            
             {/* COVER LETTER */}
             <textarea
               placeholder="Write a cover letter..."
