@@ -1,10 +1,13 @@
 ﻿using FluentAssertions;
 using JobPortal.Application.DTOs;
+using JobPortal.Domain.Entities;
+using JobPortal.Infrastructure.Persistence;
 using JobPortal.IntegrationTests.Factories;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace JobPortal.IntegrationTests.Tests.Auth
 {
@@ -12,45 +15,39 @@ namespace JobPortal.IntegrationTests.Tests.Auth
         : IClassFixture<CustomWebApplicationFactory>
     {
         private readonly HttpClient _client;
+        private readonly CustomWebApplicationFactory _factory;
 
         public AuthenticatedProfileTests(
             CustomWebApplicationFactory factory)
         {
+            _factory = factory;
             _client = factory.CreateClient();
         }
 
         [Fact]
         public async Task GetProfile_WithValidToken_Should_Return_Ok()
         {
-            // Arrange - Register User
-            var registerRequest = new RegisterUserDto
+            // Arrange - Seed user directly into DB
+            using var scope = _factory.CreateScope();
+
+            var dbContext = scope.ServiceProvider
+                .GetRequiredService<JobPortalDbContext>();
+
+            var user = new User
             {
-                Name = "Authenticated User",
-                Email = "authuser@example.com",
-                Password = "Password123!",
+                Name = "Test User",
+                Email = "authuser@test.com",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("Password123!"),
                 Role = "Seeker"
             };
 
-            var registerResponse = await _client.PostAsJsonAsync(
-    "/api/user/register",
-    registerRequest);
-
-            var registerContent = await registerResponse
-                .Content
-                .ReadAsStringAsync();
-
-            Console.WriteLine(registerResponse.StatusCode);
-            Console.WriteLine(registerContent);
-
-            return;
-
-            registerResponse.StatusCode.Should()
-                .Be(HttpStatusCode.BadRequest);
+            dbContext.Users.Add(user);
+            await dbContext.SaveChangesAsync();
 
             // Arrange - Login
             var loginRequest = new LoginDto
             {
-                Email = "authuser@example.com",
+                Email = "authuser@test.com",
                 Password = "Password123!"
             };
 
@@ -58,13 +55,13 @@ namespace JobPortal.IntegrationTests.Tests.Auth
                 "/api/user/login",
                 loginRequest);
 
+            loginResponse.StatusCode.Should()
+                .Be(HttpStatusCode.OK);
+
             var loginContent = await loginResponse
                 .Content
                 .ReadAsStringAsync();
-            Console.WriteLine(loginResponse.StatusCode);
-            Console.WriteLine(loginContent);
 
-            // Extract token from JSON response
             using var jsonDoc = JsonDocument.Parse(loginContent);
 
             var token = jsonDoc
@@ -74,7 +71,9 @@ namespace JobPortal.IntegrationTests.Tests.Auth
 
             // Attach JWT token
             _client.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue("Bearer", token);
+                new AuthenticationHeaderValue(
+                    "Bearer",
+                    token);
 
             // Act
             var profileResponse = await _client.GetAsync(

@@ -2,7 +2,6 @@
 {
     public class ResumeDataDto
     {
-        public string? FullText { get; set; }
 
         public string? CandidateName { get; set; }
 
@@ -15,5 +14,7 @@
         public List<string> Education { get; set; } = new();
 
         public List<string> Experience { get; set; } = new();
+
+        public string? FullText { get; set; } = string.Empty;   
     }
 }
