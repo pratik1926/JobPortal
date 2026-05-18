@@ -16,7 +16,7 @@
 //    }
 //}
 
-using JobPortal.Application.DTOs;
+using JobPortal.Application.DTOs.Applications;
 
 namespace JobPortal.Application.Interfaces
 {
