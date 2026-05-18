@@ -1,5 +1,4 @@
-﻿using JobPortal.Application.Interfaces;
-using JobPortal.Domain.Entities;
+﻿using JobPortal.Domain.Entities;
 using OfficeOpenXml;
 using OfficeOpenXml.Style;
 using System;
@@ -11,6 +10,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using JobPortal.Application.DTOs.Reports;
+using JobPortal.Application.Interfaces.Jobs;
+using JobPortal.Application.Interfaces.Reports;
+using JobPortal.Application.Interfaces.Users;
+using JobPortal.Application.Interfaces.Admin;
 
 namespace JobPortal.Application.Services
 {

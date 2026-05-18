@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using JobPortal.Application.Interfaces;
 using JobPortal.Domain.Entities;
 using JobPortal.Infrastructure.Persistence;
+using JobPortal.Application.Interfaces.Email;
 
 namespace JobPortal.Infrastructure.Repositories
 {

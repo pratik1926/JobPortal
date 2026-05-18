@@ -1,4 +1,4 @@
-﻿using JobPortal.Application.Interfaces;
+﻿using JobPortal.Application.Interfaces.Email;
 using JobPortal.Domain.Entities;
 
 namespace JobPortal.Application.Services

@@ -3,7 +3,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using JobPortal.Application.DTOs.Email;
-using JobPortal.Application.Interfaces;
+using JobPortal.Application.Interfaces.Email;
 using JobPortal.Application.Settings;
 using MailKit.Net.Smtp;
 using MailKit.Security;

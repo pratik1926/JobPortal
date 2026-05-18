@@ -1,5 +1,5 @@
 ﻿using FluentValidation;
-using JobPortal.Application.DTOs;
+using JobPortal.Application.DTOs.Users;
 
 namespace JobPortal.Application.Validators
 {

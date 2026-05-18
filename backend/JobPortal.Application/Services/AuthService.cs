@@ -1,7 +1,9 @@
-﻿using JobPortal.Application.DTOs;
-using JobPortal.Application.Interfaces;
-using JobPortal.Domain.Entities;
+﻿using JobPortal.Domain.Entities;
 using BCrypt.Net;
+using JobPortal.Application.DTOs.Users;
+using JobPortal.Application.Interfaces.Email;
+using JobPortal.Application.Interfaces.Users;
+using JobPortal.Application.Interfaces.Verification;
 
 namespace JobPortal.Application.Services
 {

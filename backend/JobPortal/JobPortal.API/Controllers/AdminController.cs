@@ -1,5 +1,8 @@
 ﻿using JobPortal.API.Hubs;
-using JobPortal.Application.Interfaces;
+using JobPortal.Application.Interfaces.Admin;
+using JobPortal.Application.Interfaces.Jobs;
+using JobPortal.Application.Interfaces.Moderation;
+using JobPortal.Application.Interfaces.Users;
 using JobPortal.Application.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

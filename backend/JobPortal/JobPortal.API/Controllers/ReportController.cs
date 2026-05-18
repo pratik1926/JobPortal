@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
-using JobPortal.Application.Interfaces;
-using JobPortal.Application.DTOs;
+using JobPortal.Application.DTOs.Reports;
+using JobPortal.Application.Interfaces.Reports;
 
 namespace JobPortal.API.Controllers
 {

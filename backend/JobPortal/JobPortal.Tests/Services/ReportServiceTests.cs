@@ -1,6 +1,8 @@
 ﻿using FluentAssertions;
-using JobPortal.Application.DTOs;
-using JobPortal.Application.Interfaces;
+using JobPortal.Application.DTOs.Reports;
+using JobPortal.Application.Interfaces.Jobs;
+using JobPortal.Application.Interfaces.Reports;
+using JobPortal.Application.Interfaces.Users;
 using JobPortal.Application.Services;
 using JobPortal.Domain.Entities;
 using Moq;

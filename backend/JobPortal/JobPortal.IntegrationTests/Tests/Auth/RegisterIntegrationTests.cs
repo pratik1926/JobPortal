@@ -1,5 +1,5 @@
 ﻿using FluentAssertions;
-using JobPortal.Application.DTOs;
+using JobPortal.Application.DTOs.Users;
 using JobPortal.IntegrationTests.Factories;
 using System.Net;
 using System.Net.Http.Json;

@@ -51,7 +51,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using JobPortal.Application.DTOs.Email;
-using JobPortal.Application.Interfaces;
+using JobPortal.Application.Interfaces.Email;
 using Microsoft.Extensions.Logging;
 
 namespace JobPortal.Infrastructure.Services

@@ -2,8 +2,11 @@
 using JobPortal.Application.DTOs;
 using JobPortal.Application.DTOs.Email;
 using JobPortal.Application.Exceptions;
-using JobPortal.Application.Interfaces;
+using JobPortal.Application.Interfaces.Email;
 using JobPortal.Application.Interfaces.Files;
+using JobPortal.Application.Interfaces.Jobs;
+using JobPortal.Application.Interfaces.Moderation;
+using JobPortal.Application.Interfaces.Users;
 using JobPortal.Application.Services;
 using JobPortal.Domain.Entities;
 using Microsoft.Extensions.Logging;

@@ -1,6 +1,6 @@
-﻿using JobPortal.Application.DTOs;
+﻿using JobPortal.Application.DTOs.Users;
 using JobPortal.Application.Exceptions;
-using JobPortal.Application.Interfaces;
+using JobPortal.Application.Interfaces.Users;
 using JobPortal.Domain.Entities;
 
 namespace JobPortal.Application.Services

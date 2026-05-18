@@ -1,7 +1,8 @@
 ﻿using FluentAssertions;
-using JobPortal.Application.DTOs;
+using JobPortal.Application.DTOs.Jobs;
 using JobPortal.Application.Exceptions;
-using JobPortal.Application.Interfaces;
+using JobPortal.Application.Interfaces.Jobs;
+using JobPortal.Application.Interfaces.Moderation;
 using JobPortal.Application.Services;
 using JobPortal.Domain.Entities;
 using Moq;

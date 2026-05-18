@@ -1,4 +1,4 @@
-﻿using JobPortal.Application.Interfaces;
+﻿using JobPortal.Application.Interfaces.Verification;
 using JobPortal.Domain.Entities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
