@@ -1,4 +1,4 @@
-﻿namespace JobPortal.Application.DTOs
+﻿namespace JobPortal.Application.DTOs.Applications
 {
     public class ApplicationProviderDto
     {

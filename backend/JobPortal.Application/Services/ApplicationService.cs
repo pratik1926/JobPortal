@@ -1,5 +1,4 @@
-﻿
-using JobPortal.Application.DTOs;
+﻿using JobPortal.Application.DTOs.Applications;
 using JobPortal.Application.DTOs.Email;
 using JobPortal.Application.Exceptions;
 using JobPortal.Application.Interfaces;
