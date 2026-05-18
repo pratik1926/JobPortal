@@ -12,6 +12,8 @@
   "dependencies": {
     "@microsoft/signalr": "^10.0.0",
     "axios": "^1.15.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
     "devextreme": "^25.2.6",
     "devextreme-react": "^25.2.6",
     "lucide-react": "^1.8.0",
@@ -21,6 +23,7 @@
     "react-router-dom": "^7.14.1",
     "react-toastify": "^11.1.0",
     "recharts": "^3.8.1",
+    "tailwind-merge": "^3.6.0",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {

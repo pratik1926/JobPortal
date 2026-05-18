@@ -1,4 +1,4 @@
-﻿using JobPortal.Application.Interfaces;
+﻿using JobPortal.Application.Interfaces.Users;
 using JobPortal.Domain.Entities;
 using JobPortal.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;

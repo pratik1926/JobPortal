@@ -2,10 +2,10 @@
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using JobPortal.Application.Interfaces;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Hosting;
 using RazorLight;
+using JobPortal.Application.Interfaces.Email;
 
 namespace JobPortal.Infrastructure.Services
 {

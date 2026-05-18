@@ -1,5 +1,5 @@
 ﻿using FluentAssertions;
-using JobPortal.Application.Interfaces;
+using JobPortal.Application.Interfaces.Email;
 using JobPortal.Application.Services;
 using JobPortal.Domain.Entities;
 using Moq;

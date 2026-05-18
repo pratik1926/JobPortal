@@ -67,7 +67,7 @@
 //    }
 //}
 
-using JobPortal.Application.Interfaces;
+using JobPortal.Application.Interfaces.Users;
 using System.Security.Claims;
 using System.Text.Json;
 

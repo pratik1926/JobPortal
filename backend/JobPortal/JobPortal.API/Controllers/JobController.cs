@@ -1,11 +1,13 @@
-﻿using JobPortal.Application.Interfaces;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using JobPortal.API.DTOs;
-using JobPortal.Application.DTOs;
 using JobPortal.Application.Exceptions;
 using JobPortal.Application.Interfaces.Files;
+using JobPortal.Application.DTOs.Jobs;
+using JobPortal.Application.DTOs.Applications;
+using JobPortal.Application.Interfaces.Applications;
+using JobPortal.Application.Interfaces.Jobs;
 
 namespace JobPortal.API.Controllers
 {

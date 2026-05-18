@@ -1,5 +1,6 @@
 ﻿using FluentAssertions;
-using JobPortal.Application.DTOs;
+using JobPortal.Application.DTOs.Users;
+using JobPortal.Application.DTOs.Jobs;
 using JobPortal.Domain.Entities;
 using JobPortal.Infrastructure.Persistence;
 using JobPortal.IntegrationTests.Factories;

@@ -1,11 +1,11 @@
-﻿using JobPortal.Application.DTOs;
-using JobPortal.Application.DTOs.Auth;
-using JobPortal.Application.Interfaces;
+﻿using JobPortal.Application.DTOs.Auth;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using JobPortal.API.Hubs;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
+using JobPortal.Application.DTOs.Users;
+using JobPortal.Application.Interfaces.Users;
 
 namespace JobPortal.API.Controllers;
 

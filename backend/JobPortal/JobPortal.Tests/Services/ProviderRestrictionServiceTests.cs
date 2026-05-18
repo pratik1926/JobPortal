@@ -1,6 +1,8 @@
 ﻿using FluentAssertions;
 using JobPortal.Application.DTOs.Moderation;
-using JobPortal.Application.Interfaces;
+using JobPortal.Application.Interfaces.Moderation;
+using JobPortal.Application.Interfaces.Reports;
+using JobPortal.Application.Interfaces.Users;
 using JobPortal.Application.Services;
 using JobPortal.Domain.Entities;
 using Microsoft.Extensions.Logging;
