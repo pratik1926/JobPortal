@@ -1,7 +1,7 @@
 import { Link, Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useContext, useState } from "react";
 import { AuthContext } from "../context/AuthContext";
-import NotificationBell from "../features/notifications/NotificationBell";
+import NotificationBell from "../features/notifications/components/NotificationBell";
 
 import {
   Search,

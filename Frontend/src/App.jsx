@@ -8,12 +8,12 @@ import Home from "./pages/Home";
 import ForgotPassword from "./pages/ForgotPassword";
 
 // 🧑‍💼 Provider
-import Dashboard from "./pages/Dashboard";
-import ApplicationsPage from "./features/dashboard/ApplicationsPage";
+import Dashboard from "./features/provider/pages/Dashboard";
+import ApplicationsPage from "./features/provider/pages/ApplicationsPage";
 
 // 👤 Seeker
-import SeekerDashboard from "./features/dashboard/SeekerDashboard";
-import MyApplications from "./features/dashboard/MyApplications";
+import SeekerDashboard from "./features/seeker/pages/SeekerDashboard";
+import MyApplications from "./features/seeker/pages/MyApplications";
 
 // 🔐 Auth
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -24,20 +24,20 @@ import SeekerLayout from "./layouts/SeekerLayout";
 import AdminLayout from "./layouts/AdminLayout";
 
 // ✅ Admin
-import AdminDashboard from "./pages/Admin/AdminDashboard";
-import AdminUsers from "./pages/Admin/AdminUsers";
-import AdminJobs from "./pages/Admin/AdminJobs";
+import AdminDashboard from "./features/admin/pages/AdminDashboard";
+import AdminUsers from "./features/admin/pages/AdminUsers";
+import AdminJobs from "./features/admin/pages/AdminJobs";
 
-import AdminReports from "./pages/Admin/AdminReports";
-import ProviderReports from "./pages/provider/ProviderReport";
+import AdminReports from "./features/admin/pages/AdminReports";
+import ProviderReports from "./features/provider/pages/ProviderReport";
 
 import Profile from "./features/profile/Profile";
 
 import ReportingCenter
-  from "./pages/admin/ReportingCenter";
+  from "./features/admin/pages/ReportingCenter";
 
 import ReportPreview
-  from "./pages/admin/ReportPreview";
+  from "./features/admin/pages/ReportPreview";
 
 function App() {
   return (

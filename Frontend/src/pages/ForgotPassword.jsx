@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { forgotPassword, verifyOtp, resetPassword } from "../features/auth/authApi";
+import { forgotPassword, verifyOtp, resetPassword } from "../api/auth/authApi";
 import { useNavigate } from "react-router-dom";
 import { Mail, Lock, Loader2, Eye, EyeOff } from "lucide-react";
 

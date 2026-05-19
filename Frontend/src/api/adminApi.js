@@ -71,7 +71,7 @@ export const exportJobsReport =
   async () => {
 
     return api.get(
-      "/Admin/export-jobs",
+      "/Admin/export/jobs",
       {
         responseType: "blob"
       }

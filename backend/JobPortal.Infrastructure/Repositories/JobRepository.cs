@@ -36,13 +36,81 @@ namespace JobPortal.Infrastructure.Repositories
         }
 
         // ✅ DELETE JOB
+        //public async Task<bool> DeleteJobAsync(int id)
+        //{
+        //    var job = await _context.Jobs.FindAsync(id);
+        //    if (job == null) return false;
+
+        //    _context.Jobs.Remove(job);
+        //    await _context.SaveChangesAsync();
+        //    return true;
+        //}
         public async Task<bool> DeleteJobAsync(int id)
         {
-            var job = await _context.Jobs.FindAsync(id);
-            if (job == null) return false;
+            var job = await _context.Jobs
+                .Include(j => j.Application)
+                .FirstOrDefaultAsync(j => j.Id == id);
 
+            if (job == null)
+                return false;
+
+            // Get application IDs
+            var applicationIds = job.Application
+                .Select(a => a.Id)
+                .ToList();
+
+            // Get reports tied to applications
+            var reports = await _context.Reports
+                .Where(r =>
+                    applicationIds.Contains(
+                        r.ApplicationId
+                    )
+                )
+                .ToListAsync();
+
+            // Get report IDs
+            var reportIds = reports
+                .Select(r => r.Id)
+                .ToList();
+
+            // Delete provider restrictions first
+            var restrictions =
+                await _context.ProviderRestrictions
+                    .Where(pr =>
+                        pr.ReportId.HasValue &&
+                        reportIds.Contains(
+                            pr.ReportId.Value
+                        )
+                    )
+                    .ToListAsync();
+
+            if (restrictions.Any())
+            {
+                _context.ProviderRestrictions
+                    .RemoveRange(restrictions);
+            }
+
+            // Delete reports
+            if (reports.Any())
+            {
+                _context.Reports
+                    .RemoveRange(reports);
+            }
+
+            // Delete applications
+            if (job.Application.Any())
+            {
+                _context.Applications
+                    .RemoveRange(
+                        job.Application
+                    );
+            }
+
+            // Delete job
             _context.Jobs.Remove(job);
+
             await _context.SaveChangesAsync();
+
             return true;
         }
 

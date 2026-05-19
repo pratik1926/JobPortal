@@ -12,9 +12,11 @@ export function SectionHeader({
         `
         mb-5
         flex
-        items-start
-        justify-between
+        flex-col
         gap-4
+        sm:flex-row
+        sm:items-start
+        sm:justify-between
         `,
         className
       )}

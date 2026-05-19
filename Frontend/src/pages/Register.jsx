@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { registerUser, sendOtp, verifyOtp } from "../features/auth/authApi";
+import { registerUser, sendOtp, verifyOtp } from "../api/auth/authApi";
 import { useNavigate } from "react-router-dom";
 import { User, Mail, Lock, Loader2, Eye, EyeOff } from "lucide-react";
 
