@@ -1,95 +1,29 @@
-import { useEffect, useState } from "react";
-import { getMyJobs, deleteJob } from "../../../api/jobApi";
+// import { useEffect, useState } from "react";
+// import { getMyJobs, deleteJob } from "../../../api/jobApi";
 import PostJob from "../components/PostJob";
 import EditJobModal from "../components/EditJobModal";
 import { Trash2, Pencil } from "lucide-react";
-import connection from "../../../services/signalr";
+// import connection from "../../../services/signalr";
 import BulkJobUpload from "../components/BulkJobUpload"
-
+import useProviderDashboard
+from "../hooks/useProviderDashboard";
 
 export default function ProviderDashboard() {
-  const [jobs, setJobs] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [editingJob, setEditingJob] = useState(null);
+  const {
+  jobs,
+  loading,
+  editingJob,
+  setEditingJob,
+  page,
+  setPage,
+  pageSize,
+  setPageSize,
+  totalPages,
+  fetchJobs,
+  handleDelete,
+  handleUpdated
+} = useProviderDashboard();
 
-  // 🔥 PAGINATION STATE
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(5);
-  const [total, setTotal] = useState(0);
-
-  // 🔥 FETCH JOBS
-  const fetchJobs = async () => {
-    try {
-      const res = await getMyJobs(page, pageSize);
-
-      const { data, total } = res.data;
-
-      setJobs(data);
-      setTotal(total);
-    } catch (err) {
-      console.error("Error fetching jobs", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // 🔥 INITIAL + PAGINATION LOAD
-  useEffect(() => {
-    fetchJobs();
-  }, [page, pageSize]);
-
-  // 🔥 SIGNALR (ONLY ONCE)
-  useEffect(() => {
-    if (connection.state === "Disconnected") {
-      connection.start()
-        .then(() => console.log("✅ SignalR Connected"))
-        .catch((err) =>
-          console.error("❌ SignalR Connection Error:", err)
-        );
-    }
-
-    const handleNotification = (data) => {
-      console.log("🔔 Notification:", data);
-      alert(data.message);
-
-      // refresh current page
-      fetchJobs();
-    };
-
-    connection.on("ReceiveNotification", handleNotification);
-
-    return () => {
-      connection.off("ReceiveNotification", handleNotification);
-    };
-  }, []);
-
-  const totalPages = Math.ceil(total / pageSize);
-
-  // 🔥 DELETE
-  const handleDelete = async (jobId) => {
-    if (!window.confirm("Delete this job?")) return;
-
-    try {
-      await deleteJob(jobId);
-
-      // if last item deleted → go back a page
-      if (jobs.length === 1 && page > 1) {
-        setPage(page - 1);
-      } else {
-        fetchJobs();
-      }
-    } catch (err) {
-      console.error(err);
-      alert("Delete failed");
-    }
-  };
-
-  // 🔥 UPDATE
-  const handleUpdated = (updatedJob) => {
-    setJobs((prev) =>
-      prev.map((j) => (j.id === updatedJob.id ? updatedJob : j))
-    );
-  };
 
   if (loading) {
     return (
