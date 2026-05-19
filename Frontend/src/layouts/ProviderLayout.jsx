@@ -9,7 +9,7 @@ Settings,
 LogOut
 } from "lucide-react";
 import { AuthContext } from "../context/AuthContext";
-import NotificationBell from "../features/notifications/NotificationBell";
+import NotificationBell from "../features/notifications/components/NotificationBell";
 
 export default function ProviderLayout() {
 
